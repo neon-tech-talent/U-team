@@ -90,3 +90,178 @@ body {
     padding-right: 0;
   }
 }
+
+/* Lineup Generator Specific Styles */
+.pitch-container {
+  background: var(--pitch-green);
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 50%, transparent 50%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 50%, transparent 50%);
+  background-size: 100% 10%, 10% 100%;
+  position: relative;
+  aspect-ratio: 2/3;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  border: 4px solid white;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.pitch-line-center {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: white;
+}
+
+.pitch-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 25%;
+  aspect-ratio: 1/1;
+  border: 2px solid white;
+  border-radius: 50%;
+}
+
+.pitch-box {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50%;
+  height: 15%;
+  border: 2px solid white;
+}
+
+.pitch-box-top {
+  top: -2px;
+  border-top: none;
+}
+
+.pitch-box-bottom {
+  bottom: -2px;
+  border-bottom: none;
+}
+
+.jersey {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 10;
+  transition: all 0.5s ease-in-out;
+}
+
+.jersey-icon {
+  width: 44px;
+  height: 48px;
+  background: white;
+  position: relative;
+  border-radius: 4px 4px 2px 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: #333;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  font-size: 18px;
+  z-index: 10;
+  border: 1px solid #ddd;
+}
+
+/* Red and Black bands */
+.jersey-field::before {
+  content: '';
+  position: absolute;
+  top: 45%;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: #ff0000;
+  /* Red band */
+  box-shadow: 0 6px 0 #000;
+  /* Black band below red */
+  z-index: -1;
+}
+
+/* Collar detail */
+.jersey-icon::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 6px;
+  background: white;
+  border-bottom: 1px solid #ddd;
+  border-radius: 0 0 4px 4px;
+}
+
+/* Arms/Sleeves */
+.jersey-arms {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+}
+
+.jersey-arms::before,
+.jersey-arms::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  width: 16px;
+  height: 28px;
+  background: inherit;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.jersey-arms::before {
+  left: -10px;
+  transform: rotate(-30deg);
+  border-bottom: 3px solid #ff0000;
+}
+
+.jersey-arms::after {
+  right: -10px;
+  transform: rotate(30deg);
+  border-bottom: 3px solid #ff0000;
+}
+
+.jersey-field {
+  background: white;
+}
+
+.jersey-gk {
+  background: #ff7f00;
+  /* GK Orange */
+  color: white;
+  border-color: #e67300;
+}
+
+.jersey-gk .jersey-arms::before,
+.jersey-gk .jersey-arms::after {
+  border-bottom: 3px solid #cc6600;
+}
+
+.jersey-name {
+  background: rgba(255, 255, 255, 0.9);
+  color: black;
+  padding: 1px 6px;
+  border-radius: 2px;
+  font-size: 9px;
+  font-weight: 800;
+  margin-top: 6px;
+  white-space: nowrap;
+  text-transform: uppercase;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: 1px solid #ddd;
+}

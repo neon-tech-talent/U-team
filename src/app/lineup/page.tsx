@@ -1,0 +1,211 @@
+'use client'
+
+import { useEffect, useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
+import { ChevronLeft, Download, Users, CheckCircle2, Circle } from 'lucide-react'
+import { FORMATIONS } from '@/lib/lineup-utils'
+import { toJpeg } from 'html-to-image'
+import download from 'downloadjs'
+
+type Player = {
+    id: string
+    full_name: string
+    number: number
+    position: string
+}
+
+type FormationKey = keyof typeof FORMATIONS
+
+export default function LineupGenerator() {
+    const [players, setPlayers] = useState<Player[]>([])
+    const [selectedIds, setSelectedIds] = useState<string[]>([])
+    const [formation, setFormation] = useState<FormationKey>('2-3-1')
+    const [loading, setLoading] = useState(true)
+    const pitchRef = useRef<HTMLDivElement>(null)
+    const router = useRouter()
+
+    useEffect(() => {
+        async function fetchPlayers() {
+            const { data } = await supabase
+                .from('players')
+                .select('*')
+                .order('full_name', { ascending: true })
+            setPlayers(data || [])
+            setLoading(false)
+        }
+        fetchPlayers()
+    }, [])
+
+    const togglePlayer = (id: string) => {
+        if (selectedIds.includes(id)) {
+            setSelectedIds(selectedIds.filter(v => v !== id))
+        } else {
+            setSelectedIds([...selectedIds, id])
+        }
+    }
+
+    const handleDownload = async () => {
+        if (pitchRef.current === null) return
+
+        const dataUrl = await toJpeg(pitchRef.current, { quality: 0.95, backgroundColor: '#2d5a27' })
+        const date = new Date().toISOString().split('T')[0]
+        download(dataUrl, `formacion_deportivonp_${date}.jpg`)
+    }
+
+    if (loading) return <div className="p-8 text-center uppercase font-bold tracking-widest text-accent-green">Cargando plantel...</div>
+
+    const starters = selectedIds.slice(0, 7)
+    const subs = selectedIds.slice(7)
+    const formationCoords = FORMATIONS[formation]
+
+    return (
+        <div className="space-y-6 pb-24">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <button onClick={() => router.push('/')} className="p-2 hover:bg-white/5 rounded-full">
+                        <ChevronLeft />
+                    </button>
+                    <h2 className="text-xl font-bold uppercase tracking-tight text-white">Generador de Alineación</h2>
+                </div>
+                <button
+                    onClick={handleDownload}
+                    disabled={selectedIds.length === 0}
+                    className="flex items-center gap-2 bg-accent-green text-black px-4 py-2 rounded-lg font-black text-xs uppercase hover:brightness-110 disabled:opacity-50 transition-all shadow-lg"
+                >
+                    <Download size={16} /> Finalizar
+                </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Left Panel: Selection & Settings */}
+                <div className="space-y-6">
+                    <section className="soccer-card border-white/10 bg-black/40">
+                        <h3 className="text-xs font-black uppercase text-gray-400 mb-4 tracking-widest">Táctica</h3>
+                        <div className="grid grid-cols-2 gap-2">
+                            {(Object.keys(FORMATIONS) as FormationKey[]).map(f => (
+                                <button
+                                    key={f}
+                                    onClick={() => setFormation(f)}
+                                    className={`py-2 px-4 rounded border font-black text-xs uppercase transition-all ${formation === f
+                                        ? 'bg-accent-green border-accent-green text-black'
+                                        : 'bg-black/40 border-white/10 text-gray-400 hover:border-white/30'
+                                        }`}
+                                >
+                                    {f}
+                                </button>
+                            ))}
+                        </div>
+                    </section>
+
+                    <section className="soccer-card border-white/10 bg-black/40 overflow-hidden">
+                        <h3 className="text-xs font-black uppercase text-gray-400 mb-4 tracking-widest flex justify-between">
+                            Plantel <span>{selectedIds.length} seleccionados</span>
+                        </h3>
+                        <div className="max-height-[400px] overflow-y-auto space-y-1 pr-2 custom-scrollbar">
+                            {players.map(player => {
+                                const isSelected = selectedIds.includes(player.id)
+                                const index = selectedIds.indexOf(player.id)
+                                return (
+                                    <button
+                                        key={player.id}
+                                        onClick={() => togglePlayer(player.id)}
+                                        className={`w-full flex items-center justify-between p-3 rounded-lg transition-all border ${isSelected
+                                            ? 'bg-accent-green/10 border-accent-green/30 text-white'
+                                            : 'bg-black/20 border-transparent text-gray-400 hover:bg-black/30'
+                                            }`}
+                                    >
+                                        <div className="flex items-center gap-3 text-left">
+                                            {isSelected ? <CheckCircle2 size={18} className="text-accent-green" /> : <Circle size={18} />}
+                                            <div>
+                                                <p className="font-bold text-sm leading-none">{player.full_name}</p>
+                                                <p className="text-[10px] text-gray-500 uppercase mt-1">N° {player.number} • {player.position}</p>
+                                            </div>
+                                        </div>
+                                        {isSelected && (
+                                            <span className="text-[10px] font-black bg-white/10 px-2 py-1 rounded">
+                                                {index === 0 ? 'GK' : index < 7 ? 'TIT' : 'SUP'}
+                                            </span>
+                                        )}
+                                    </button>
+                                )
+                            })}
+                        </div>
+                    </section>
+                </div>
+
+                {/* Right Panel: Pitch Visualization */}
+                <div className="lg:col-span-2 flex flex-col items-center">
+                    <div ref={pitchRef} className="pitch-container">
+                        <div className="pitch-line-center"></div>
+                        <div className="pitch-circle"></div>
+                        <div className="pitch-box pitch-box-top"></div>
+                        <div className="pitch-box pitch-box-bottom"></div>
+
+                        {/* Team Info Overlay */}
+                        <div className="absolute top-4 right-4 text-right z-20 pointer-events-none">
+                            <h4 className="text-xl font-black italic text-white leading-none uppercase">Deportivo <span className="text-accent-green">NP</span></h4>
+                            <p className="text-[10px] text-accent-green font-bold tracking-[0.2em]">{formation}</p>
+                        </div>
+
+                        {/* Players on pitch */}
+                        {starters.map((id, index) => {
+                            const player = players.find(p => p.id === id)
+                            if (!player) return null
+                            const coords = formationCoords[index]
+                            const lastName = player.full_name.split(' ').pop()
+
+                            return (
+                                <div
+                                    key={player.id}
+                                    className="jersey"
+                                    style={{ top: coords.top, left: coords.left }}
+                                >
+                                    <div className={`jersey-icon ${index === 0 ? 'jersey-gk' : 'jersey-field'}`}>
+                                        <div className="jersey-arms"></div>
+                                        {player.number}
+                                    </div>
+                                    <div className="jersey-name">
+                                        {lastName}
+                                    </div>
+                                </div>
+                            )
+                        })}
+
+                        {/* Substitutes Box on Pitch (Optional) */}
+                        {subs.length > 0 && (
+                            <div className="absolute bottom-4 left-4 bg-black/60 p-2 rounded border border-white/20 z-20 backdrop-blur-sm">
+                                <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1 border-b border-white/10 pb-1">Suplentes</p>
+                                <div className="flex flex-wrap gap-x-2 gap-y-1 max-w-[150px]">
+                                    {subs.map(id => {
+                                        const player = players.find(p => p.id === id)
+                                        return (
+                                            <span key={id} className="text-[9px] text-white font-bold uppercase truncate">
+                                                {player?.full_name.split(' ').pop()}
+                                            </span>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <p className="text-gray-500 text-[10px] mt-4 uppercase font-bold tracking-[0.3em]">Vista Previa de Alineación</p>
+                </div>
+            </div>
+
+            <style jsx>{`
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 4px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: rgba(255, 255, 255, 0.05);
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: var(--accent-green);
+                    border-radius: 10px;
+                }
+            `}</style>
+        </div>
+    )
+}

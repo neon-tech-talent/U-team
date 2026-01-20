@@ -107,32 +107,44 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Admin Quick Actions */}
-      {user.is_admin && (
+      {/* Admin & Specific Users Quick Actions */}
+      {(user.is_admin || user.username === 'Diego' || user.username === 'Luciano') && (
         <div className="soccer-card border-warning-yellow/30 bg-warning-yellow/5">
           <div className="flex items-center gap-3 mb-4">
             <LayoutDashboard className="text-warning-yellow" />
             <h3 className="font-bold uppercase tracking-tight">Panel Admin</h3>
           </div>
           <div className="grid grid-cols-2 gap-3">
+            {user.is_admin && (
+              <>
+                <Link
+                  href="/admin/matches/new"
+                  className="p-3 bg-warning-yellow text-black text-center rounded-lg font-black text-xs uppercase hover:brightness-110 shadow-lg"
+                >
+                  Nuevo Partido
+                </Link>
+                <Link
+                  href="/admin/matches"
+                  className="p-3 bg-black/40 text-warning-yellow text-center border border-warning-yellow/50 rounded-lg font-black text-xs uppercase hover:bg-black/60"
+                >
+                  Partidos
+                </Link>
+              </>
+            )}
             <Link
-              href="/admin/matches/new"
-              className="p-3 bg-warning-yellow text-black text-center rounded-lg font-black text-xs uppercase hover:brightness-110 shadow-lg"
+              href="/lineup"
+              className={`p-3 bg-accent-green text-black text-center rounded-lg font-black text-xs uppercase hover:brightness-110 shadow-lg ${!user.is_admin ? 'col-span-2' : ''}`}
             >
-              Nuevo Partido
+              Armar Alineación
             </Link>
-            <Link
-              href="/admin/matches"
-              className="p-3 bg-black/40 text-warning-yellow text-center border border-warning-yellow/50 rounded-lg font-black text-xs uppercase hover:bg-black/60"
-            >
-              Partidos
-            </Link>
-            <Link
-              href="/admin/players"
-              className="p-3 bg-black/40 text-white/70 text-center border border-white/10 rounded-lg font-black text-xs uppercase hover:bg-black/60 md:col-span-2"
-            >
-              Gestionar Plantel
-            </Link>
+            {user.is_admin && (
+              <Link
+                href="/admin/players"
+                className="p-3 bg-black/40 text-white/70 text-center border border-white/10 rounded-lg font-black text-xs uppercase hover:bg-black/60"
+              >
+                Gestionar Plantel
+              </Link>
+            )}
           </div>
         </div>
       )}
