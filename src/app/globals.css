@@ -55,7 +55,16 @@ body {
   width: 100%;
   max-width: 800px;
   margin: 0 auto;
-  padding: 1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 1rem;
+}
+
+/* Safe Area Support for mobile */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+  }
 }
 
 @media (min-width: 640px) {

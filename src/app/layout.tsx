@@ -26,11 +26,11 @@ export default function RootLayout({
               Deportivo <span className="text-accent-green">NP</span>
             </h1>
           </header>
-          <main className="flex-grow container-responsive pb-24 md:pb-8">
+          <main className="flex-grow container-responsive pb-32 md:pb-8">
             {children}
           </main>
 
-          <nav className="fixed bottom-0 left-0 w-full bg-black/90 border-t border-white/10 flex justify-around p-3 backdrop-blur-md md:static md:bg-transparent md:border-none md:p-6">
+          <nav className="fixed bottom-0 left-0 w-full bg-black/95 border-t border-white/10 flex justify-around items-center p-3 pb-[calc(12px+env(safe-area-inset-bottom))] backdrop-blur-md md:static md:bg-transparent md:border-none md:p-6">
             <Link href="/" className="flex flex-col items-center gap-1 text-gray-400 hover:text-accent-green transition-colors">
               <Trophy size={20} />
               <span className="text-[10px] uppercase font-bold">Inicio</span>

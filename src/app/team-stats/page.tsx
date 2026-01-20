@@ -93,7 +93,7 @@ export default function TeamStats() {
     }, { pg: 0, pe: 0, pp: 0, gf: 0, gc: 0 })
 
     return (
-        <div className="space-y-8 pb-20">
+        <div className="space-y-8">
             <div className="flex items-center gap-4">
                 <button onClick={() => router.push('/')} className="p-2 hover:bg-white/5 rounded-full">
                     <ChevronLeft />
