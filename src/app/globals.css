@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+:root {
+  --pitch-green: #2d5a27;
+  --pitch-dark: #1a3c17;
+  --pitch-lines: #ffffff;
+  --grass-texture: radial-gradient(circle at 50% 50%, #3a6d33 25%, #2d5a27 100%);
+
+  --background: #0f170f;
+  --foreground: #f0f0f0;
+  --card-bg: #1a241a;
+  --accent-green: #4ade80;
+  --danger-red: #ef4444;
+  --warning-yellow: #facc15;
+}
+
+@theme inline {
+  --color-pitch-green: var(--pitch-green);
+  --color-pitch-dark: var(--pitch-dark);
+  --color-accent-green: var(--accent-green);
+  --color-danger-red: var(--danger-red);
+  --color-warning-yellow: var(--warning-yellow);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.soccer-card {
+  background-color: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.pitch-header {
+  background: linear-gradient(to bottom, var(--pitch-dark), var(--pitch-green));
+  padding: 2rem;
+  text-align: center;
+  border-bottom: 4px solid var(--accent-green);
+}
+
+.stat-value {
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: var(--accent-green);
+}
+
+.container-responsive {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-responsive {
+    padding: 2rem;
+  }
+}
+
+.table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-left: -1rem;
+  margin-right: -1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .table-container {
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
