@@ -53,7 +53,7 @@ export default function LoginPage() {
                 <h1 className="text-3xl md:text-4xl font-black italic text-white uppercase tracking-tighter">
                     Deportivo <span className="text-accent-green">NP</span>
                 </h1>
-                <p className="text-gray-500 uppercase text-[10px] tracking-widest font-bold">Gestión de Plantel</p>
+                <p className="text-gray-500 uppercase text-[10px] tracking-widest font-bold">Gestión de Plantel v2.0</p>
             </div>
             <div className="soccer-card w-full max-w-md">
                 <h2 className="text-xl font-bold mb-6 text-center text-accent-green uppercase tracking-wider">
