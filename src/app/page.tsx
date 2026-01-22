@@ -1,5 +1,7 @@
 'use client'
 
+// Deployment trigger: 2026-01-22
+
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
