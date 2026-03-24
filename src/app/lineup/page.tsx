@@ -176,17 +176,29 @@ export default function LineupGenerator() {
                             const coords = formationCoords[index]
                             const lastName = player.full_name.split(' ').pop()
 
+                            // Goalkeeper wears a different color usually, but let's just make it a distinct solid color (e.g., bright yellow) if no custom handling
+                            const isGK = index === 0;
+                            const pStyle = isGK ? 'solid' : teamSettings.shirt_style;
+                            const pPrimary = isGK ? '#facc15' : teamSettings.primary_color;
+                            const pSecondary = isGK ? '#000000' : teamSettings.secondary_color;
+
                             return (
                                 <div
                                     key={player.id}
-                                    className="jersey"
+                                    className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10"
                                     style={{ top: coords.top, left: coords.left }}
                                 >
-                                    <div className={`jersey-icon ${index === 0 ? 'jersey-gk' : 'jersey-field'}`}>
-                                        <div className="jersey-arms"></div>
-                                        {player.number}
+                                    <div className="relative w-12 h-12 md:w-16 md:h-16 flex items-center justify-center drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)]">
+                                        <JerseyIcon 
+                                            styleId={pStyle}
+                                            primaryColor={pPrimary}
+                                            secondaryColor={pSecondary}
+                                        />
+                                        <span className="absolute inset-0 flex items-center justify-center pt-2 text-[10px] md:text-sm font-black text-white" style={{ textShadow: '0 0 3px rgba(0,0,0,0.8)' }}>
+                                            {player.number}
+                                        </span>
                                     </div>
-                                    <div className="jersey-name">
+                                    <div className="bg-white/95 text-black text-[8px] md:text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded shadow mt-1">
                                         {lastName}
                                     </div>
                                 </div>
