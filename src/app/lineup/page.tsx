@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
 import { ChevronLeft, Download, Users, CheckCircle2, Circle } from 'lucide-react'
 import { FORMATIONS } from '@/lib/lineup-utils'
 import { getPlayers } from '@/lib/db'
@@ -21,6 +22,7 @@ export default function LineupGenerator() {
     const [players, setPlayers] = useState<Player[]>([])
     const [selectedIds, setSelectedIds] = useState<string[]>([])
     const [formation, setFormation] = useState<FormationKey>('2-3-1')
+    const [teamName, setTeamName] = useState('Ultimate Team')
     const [loading, setLoading] = useState(true)
     const pitchRef = useRef<HTMLDivElement>(null)
     const router = useRouter()
@@ -33,6 +35,11 @@ export default function LineupGenerator() {
                 return
             }
             const user = JSON.parse(userStr)
+
+            if (user.team_id) {
+                const { data: tData } = await supabase.from('teams').select('name').eq('id', user.team_id).single()
+                if (tData) setTeamName(tData.name)
+            }
 
             const { data } = await getPlayers(user.team_id)
             setPlayers(data || [])
@@ -148,7 +155,7 @@ export default function LineupGenerator() {
 
                         {/* Team Info Overlay */}
                         <div className="absolute top-4 right-4 text-right z-20 pointer-events-none">
-                            <h4 className="text-xl font-black italic text-white leading-none uppercase">Ultimate <span className="text-accent-green">Team</span></h4>
+                            <h4 className="text-xl font-black italic text-white leading-none uppercase">{teamName}</h4>
                             <p className="text-[10px] text-accent-green font-bold tracking-[0.2em]">{formation}</p>
                         </div>
 
