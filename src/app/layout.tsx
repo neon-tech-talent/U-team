@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
 import { Trophy, Users, User } from "lucide-react";
+import ClientHeader from "@/components/ClientHeader";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,11 +21,7 @@ export default function RootLayout({
     <html lang="es">
       <body className={inter.className}>
         <div className="min-h-screen flex flex-col">
-          <header className="pitch-header flex flex-col items-center gap-3">
-            <h1 className="text-2xl md:text-4xl font-black italic tracking-tighter uppercase">
-              Ultimate <span className="text-accent-green">Team</span>
-            </h1>
-          </header>
+          <ClientHeader />
           <main className="flex-grow container-responsive pb-32 md:pb-8">
             {children}
           </main>
