@@ -14,6 +14,7 @@ export default function NewMatch() {
     const [goalsOwn, setGoalsOwn] = useState(0)
     const [goalsRival, setGoalsRival] = useState(0)
     const [playerStats, setPlayerStats] = useState<any>({})
+    const [currentUser, setCurrentUser] = useState<any>(null)
     const router = useRouter()
 
     useEffect(() => {
@@ -24,12 +25,13 @@ export default function NewMatch() {
                 return
             }
             const user = JSON.parse(userStr)
-            if (!user.is_admin) {
+            if (user.role !== 'admin') {
                 router.push('/')
                 return
             }
+            setCurrentUser(user)
 
-            const { data } = await getPlayers()
+            const { data } = await getPlayers(user.team_id)
             if (data) {
                 setPlayers(data)
                 const initialStats = {} as any
@@ -76,7 +78,7 @@ export default function NewMatch() {
         const { data: matchData, error: matchError } = await supabase
             .from('matches')
             .insert([
-                { match_date: date, rival, goals_own: goalsOwn, goals_rival: goalsRival }
+                { match_date: date, rival, goals_own: goalsOwn, goals_rival: goalsRival, team_id: currentUser?.team_id }
             ])
             .select()
             .single()
@@ -143,7 +145,7 @@ export default function NewMatch() {
                     </div>
                     <div className="flex gap-4">
                         <div className="flex-1">
-                            <label className="block text-xs text-gray-400 uppercase mb-1">Goles NP</label>
+                            <label className="block text-xs text-gray-400 uppercase mb-1">Goles UT</label>
                             <input
                                 type="number"
                                 className="w-full bg-black/20 border border-white/10 rounded p-2 focus:border-accent-green outline-none"

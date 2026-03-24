@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { getPlayers } from '@/lib/db'
 import { ChevronLeft, Trophy, Users, ShieldAlert } from 'lucide-react'
 
 export default function TeamStats() {
@@ -13,10 +14,23 @@ export default function TeamStats() {
 
     useEffect(() => {
         async function fetchData() {
-            const { data: pData } = await supabase.from('players').select('*')
-            const { data: sData } = await supabase.from('match_stats').select('*').eq('played', true)
-            const { data: mData } = await supabase.from('matches').select('*')
-            const { data: vData } = await supabase.from('votes').select('*')
+            const userStr = localStorage.getItem('user')
+            if (!userStr) {
+                router.push('/login')
+                return
+            }
+            const user = JSON.parse(userStr)
+
+            const { data: mData } = await supabase.from('matches').select('*').eq('team_id', user.team_id)
+            const matchIds = mData?.map(m => m.id) || []
+            
+            const { data: pData } = await getPlayers(user.team_id)
+            const { data: sData } = matchIds.length > 0 
+                ? await supabase.from('match_stats').select('*').in('match_id', matchIds).eq('played', true) 
+                : { data: [] }
+            const { data: vData } = matchIds.length > 0 
+                ? await supabase.from('votes').select('*').in('match_id', matchIds) 
+                : { data: [] }
 
             if (pData && sData) {
                 const statsMap = pData.map(p => {

@@ -57,8 +57,8 @@ export default function Profile() {
 
             {/* Profile Header */}
             <div className="soccer-card bg-gradient-to-tr from-pitch-dark to-black border-accent-green/30 flex flex-col sm:flex-row items-center text-center sm:text-left gap-4 md:gap-6">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-accent-green rounded-full overflow-hidden border-2 border-accent-green shrink-0">
-                    <img src="/logo.jpg" alt="Logo" className="w-full h-full object-cover" />
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-accent-green/20 rounded-full flex items-center justify-center border-2 border-accent-green/50 shrink-0 shadow-inner">
+                    <User size={32} className="text-accent-green" />
                 </div>
                 <div>
                     <h3 className="text-xl md:text-2xl font-black uppercase text-white">{user.full_name}</h3>

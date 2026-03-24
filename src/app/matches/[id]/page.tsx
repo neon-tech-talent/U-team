@@ -151,11 +151,10 @@ export default function MatchDetails({ params }: { params: Promise<{ id: string 
 
                 <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
                     <div className="flex-1 order-2 md:order-1 text-center md:text-right">
-                        <p className="text-xl md:text-2xl font-black mb-1">DEPORTIVO NP</p>
+                        <p className="text-xl md:text-2xl font-black mb-1">ULTIMATE TEAM</p>
                         {isWinner && <span className="text-[10px] bg-accent-green text-black px-2 py-0.5 font-bold rounded uppercase">Ganador</span>}
                     </div>
                     <div className="flex flex-col items-center order-1 md:order-2">
-                        <img src="/logo.jpg" alt="Escudo" className="w-12 h-12 rounded-full border border-accent-green mb-2 opacity-80" />
                         <div className="flex items-center gap-4">
                             <span className={`text-4xl md:text-6xl font-black ${isWinner ? 'text-accent-green' : ''}`}>{match.goals_own}</span>
                             <span className="text-gray-600 text-3xl font-black">-</span>

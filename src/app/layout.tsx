@@ -7,8 +7,8 @@ import { Trophy, Users, User } from "lucide-react";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Deportivo NP - Team Manager",
-  description: "App de registro de partidos y estadísticas del equipo Deportivo NP",
+  title: "Ultimate Team - Team Manager",
+  description: "App de registro de partidos y estadísticas del equipo Ultimate Team",
 };
 
 export default function RootLayout({
@@ -21,9 +21,8 @@ export default function RootLayout({
       <body className={inter.className}>
         <div className="min-h-screen flex flex-col">
           <header className="pitch-header flex flex-col items-center gap-3">
-            <img src="/logo.jpg" alt="Logo Deportivo NP" className="w-20 h-20 md:w-24 md:h-24 rounded-full border-2 border-accent-green shadow-lg" />
-            <h1 className="text-2xl md:text-3xl font-black italic tracking-tighter text-white uppercase">
-              Deportivo <span className="text-accent-green">NP</span>
+            <h1 className="text-2xl md:text-4xl font-black italic tracking-tighter uppercase">
+              Ultimate <span className="text-accent-green">Team</span>
             </h1>
           </header>
           <main className="flex-grow container-responsive pb-32 md:pb-8">
@@ -46,7 +45,7 @@ export default function RootLayout({
           </nav>
 
           <footer className="p-8 text-center text-gray-500 text-sm hidden md:block">
-            &copy; {new Date().getFullYear()} Deportivo NP - Gestión de Equipo
+            &copy; {new Date().getFullYear()} Ultimate Team - Gestión de Equipo
           </footer>
         </div>
       </body>

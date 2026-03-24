@@ -30,16 +30,22 @@ export default function LoginPage() {
             return
         }
 
-        // Checking fixed/initial password logic as requested
-        // Note: This is simplified. Normally we would hash and use Supabase Auth.
-        // The requirement says admin password is 'Nhaojant8.' and players '1234'
-        const isAdmin = data.is_admin
-        const expectedPassword = isAdmin ? 'Nhaojant8.' : '1234'
-
-        if (password === expectedPassword || (data.password && password === data.password)) {
-            // Set session/cookie logic here or just redirect for demo
+        if (data.password && password === data.password) {
             localStorage.setItem('user', JSON.stringify(data))
-            router.push('/')
+            
+            // Redirigir según el rol
+            if (data.role === 'superadmin') {
+                router.push('/superadmin')
+            } else if (data.role === 'admin') {
+                // Verificar si tiene equipo configurado
+                if (!data.team_id) {
+                    router.push('/admin/setup-team')
+                } else {
+                    router.push('/')
+                }
+            } else {
+                router.push('/')
+            }
         } else {
             setError('Contraseña incorrecta')
         }
@@ -49,9 +55,8 @@ export default function LoginPage() {
     return (
         <div className="flex flex-col items-center justify-center p-4 min-h-[80vh]">
             <div className="mb-8 text-center">
-                <img src="/logo.jpg" alt="Escudo" className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-accent-green mx-auto mb-4 shadow-2xl" />
                 <h1 className="text-3xl md:text-4xl font-black italic text-white uppercase tracking-tighter">
-                    Deportivo <span className="text-accent-green">NP</span>
+                    Ultimate <span className="text-accent-green">Team</span>
                 </h1>
                 <p className="text-gray-500 uppercase text-[10px] tracking-widest font-bold">Gestión de Plantel v2.0</p>
             </div>

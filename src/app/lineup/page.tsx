@@ -2,9 +2,9 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
 import { ChevronLeft, Download, Users, CheckCircle2, Circle } from 'lucide-react'
 import { FORMATIONS } from '@/lib/lineup-utils'
+import { getPlayers } from '@/lib/db'
 import { toJpeg } from 'html-to-image'
 import download from 'downloadjs'
 
@@ -27,15 +27,19 @@ export default function LineupGenerator() {
 
     useEffect(() => {
         async function fetchPlayers() {
-            const { data } = await supabase
-                .from('players')
-                .select('*')
-                .order('full_name', { ascending: true })
+            const userStr = localStorage.getItem('user')
+            if (!userStr) {
+                router.push('/login')
+                return
+            }
+            const user = JSON.parse(userStr)
+
+            const { data } = await getPlayers(user.team_id)
             setPlayers(data || [])
             setLoading(false)
         }
         fetchPlayers()
-    }, [])
+    }, [router])
 
     const togglePlayer = (id: string) => {
         if (selectedIds.includes(id)) {
@@ -144,7 +148,7 @@ export default function LineupGenerator() {
 
                         {/* Team Info Overlay */}
                         <div className="absolute top-4 right-4 text-right z-20 pointer-events-none">
-                            <h4 className="text-xl font-black italic text-white leading-none uppercase">Deportivo <span className="text-accent-green">NP</span></h4>
+                            <h4 className="text-xl font-black italic text-white leading-none uppercase">Ultimate <span className="text-accent-green">Team</span></h4>
                             <p className="text-[10px] text-accent-green font-bold tracking-[0.2em]">{formation}</p>
                         </div>
 

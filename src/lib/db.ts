@@ -1,10 +1,17 @@
 import { supabase } from './supabase'
 
-export async function getPlayers() {
-    const { data, error } = await supabase
+export async function getPlayers(teamId?: string) {
+    let query = supabase
         .from('players')
         .select('*')
+        .eq('role', 'player')
         .order('full_name', { ascending: true })
+        
+    if (teamId) {
+        query = query.eq('team_id', teamId)
+    }
+    
+    const { data, error } = await query
     return { data, error }
 }
 

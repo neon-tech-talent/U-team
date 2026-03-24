@@ -20,13 +20,29 @@ export default function Dashboard() {
       router.push('/login')
     } else {
       const u = JSON.parse(savedUser)
+      
+      if (u.role === 'superadmin') {
+        router.push('/superadmin')
+        return
+      }
+      if (u.role === 'admin' && !u.team_id) {
+        router.push('/admin/setup-team')
+        return
+      }
+
       setUser(u)
 
       const fetchData = async () => {
-        const { data } = await supabase
+        let query = supabase
           .from('matches')
           .select('*')
           .order('match_date', { ascending: false })
+        
+        if (u.team_id) {
+          query = query.eq('team_id', u.team_id)
+        }
+
+        const { data } = await query
         setMatches(data || [])
         setLoading(false)
       }
@@ -53,7 +69,6 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div className="flex justify-between items-center bg-black/30 p-4 rounded-xl border border-white/5">
         <div className="flex items-center gap-3">
-          <img src="/logo.jpg" alt="Logo" className="w-12 h-12 rounded-full border border-accent-green shadow-lg" />
           <div>
             <p className="text-gray-400 text-[10px] uppercase font-bold tracking-widest">Bienvenido,</p>
             <h2 className="text-xl font-bold">{user.full_name}</h2>
@@ -109,47 +124,48 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Admin & Specific Users Quick Actions */}
-      {(user.is_admin || user.username === 'Diego' || user.username === 'Luciano') && (
+      {/* Admin Quick Actions */}
+      {user.role === 'admin' && (
         <div className="soccer-card border-warning-yellow/30 bg-warning-yellow/5">
           <div className="flex items-center gap-3 mb-4">
             <LayoutDashboard className="text-warning-yellow" />
             <h3 className="font-bold uppercase tracking-tight">Panel Admin</h3>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            {user.is_admin && (
-              <>
-                <Link
-                  href="/admin/matches/new"
-                  className="p-3 bg-warning-yellow text-black text-center rounded-lg font-black text-xs uppercase hover:brightness-110 shadow-lg"
-                >
-                  Nuevo Partido
-                </Link>
-                <Link
-                  href="/admin/matches"
-                  className="p-3 bg-black/40 text-warning-yellow text-center border border-warning-yellow/50 rounded-lg font-black text-xs uppercase hover:bg-black/60"
-                >
-                  Partidos
-                </Link>
-              </>
-            )}
             <Link
-              href="/lineup"
-              className={`p-3 bg-accent-green text-black text-center rounded-lg font-black text-xs uppercase hover:brightness-110 shadow-lg ${!user.is_admin ? 'col-span-2' : ''}`}
+              href="/admin/matches/new"
+              className="p-3 bg-warning-yellow text-black text-center rounded-lg font-black text-xs uppercase hover:brightness-110 shadow-lg"
             >
-              Armar Alineación
+              Nuevo Partido
             </Link>
-            {user.is_admin && (
-              <Link
-                href="/admin/players"
-                className="p-3 bg-black/40 text-white/70 text-center border border-white/10 rounded-lg font-black text-xs uppercase hover:bg-black/60"
-              >
-                Gestionar Plantel
-              </Link>
-            )}
+            <Link
+              href="/admin/matches"
+              className="p-3 bg-black/40 text-warning-yellow text-center border border-warning-yellow/50 rounded-lg font-black text-xs uppercase hover:bg-black/60"
+            >
+              Partidos
+            </Link>
+            <Link
+              href="/admin/players"
+              className="p-3 bg-black/40 text-white/70 text-center border border-white/10 rounded-lg font-black text-xs uppercase hover:bg-black/60 col-span-2"
+            >
+              Gestionar Plantel
+            </Link>
           </div>
         </div>
       )}
+
+      {/* Team Tools (Available for all roles including players) */}
+      <div className="soccer-card border-accent-green/30">
+        <div className="flex items-center gap-3 mb-4">
+          <h3 className="font-bold uppercase tracking-tight text-accent-green">Herramientas del Equipo</h3>
+        </div>
+        <Link
+          href="/lineup"
+          className="block w-full p-3 bg-white/10 text-white text-center rounded-lg font-black text-xs uppercase hover:bg-accent-green hover:text-black transition-colors"
+        >
+          Armar Pizarra Táctica
+        </Link>
+      </div>
 
       {/* Recent Matches */}
       <section>
@@ -173,7 +189,7 @@ export default function Dashboard() {
                   <div className="space-y-1">
                     <p className="text-[10px] text-gray-500 uppercase font-bold">{new Date(match.match_date).toLocaleDateString()}</p>
                     <div className="flex items-center gap-3">
-                      <span className="font-black text-lg">NP {match.goals_own}</span>
+                      <span className="font-black text-lg">UT {match.goals_own}</span>
                       <span className="text-gray-600 font-bold">-</span>
                       <span className="font-bold text-gray-400">{match.goals_rival} {match.rival}</span>
                     </div>

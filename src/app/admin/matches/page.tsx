@@ -14,7 +14,12 @@ export default function AdminMatches() {
     useEffect(() => {
         async function init() {
             const userStr = localStorage.getItem('user')
-            if (!userStr || !JSON.parse(userStr).is_admin) {
+            if (!userStr) {
+                router.push('/login')
+                return
+            }
+            const user = JSON.parse(userStr)
+            if (user.role !== 'admin') {
                 router.push('/')
                 return
             }
@@ -22,6 +27,7 @@ export default function AdminMatches() {
             const { data } = await supabase
                 .from('matches')
                 .select('*')
+                .eq('team_id', user.team_id)
                 .order('match_date', { ascending: false })
             setMatches(data || [])
             setLoading(false)

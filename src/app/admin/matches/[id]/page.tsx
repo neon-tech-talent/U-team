@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { getPlayers } from '@/lib/db'
 import { Save, ChevronLeft, Trash2 } from 'lucide-react'
 
 export default function EditMatch({ params }: { params: Promise<{ id: string }> }) {
@@ -19,7 +20,12 @@ export default function EditMatch({ params }: { params: Promise<{ id: string }> 
     useEffect(() => {
         async function init() {
             const userStr = localStorage.getItem('user')
-            if (!userStr || !JSON.parse(userStr).is_admin) {
+            if (!userStr) {
+                router.push('/login')
+                return
+            }
+            const user = JSON.parse(userStr)
+            if (user.role !== 'admin') {
                 router.push('/')
                 return
             }
@@ -34,13 +40,13 @@ export default function EditMatch({ params }: { params: Promise<{ id: string }> 
             }
 
             // Fetch Players and existing stats
-            const { data: pData } = await supabase.from('players').select('*').order('full_name', { ascending: true })
+            const { data: pData } = await getPlayers(user.team_id)
             const { data: sData } = await supabase.from('match_stats').select('*').eq('match_id', id)
 
             if (pData) {
                 setPlayers(pData)
                 const statsObj = {} as any
-                pData.forEach(p => {
+                pData.forEach((p: any) => {
                     const existing = sData?.find(s => s.player_id === p.id)
                     statsObj[p.id] = existing || {
                         played: false,
@@ -147,7 +153,7 @@ export default function EditMatch({ params }: { params: Promise<{ id: string }> 
                     </div>
                     <div className="flex gap-4">
                         <div className="flex-1">
-                            <label className="block text-xs text-gray-400 uppercase mb-1">Goles NP</label>
+                            <label className="block text-xs text-gray-400 uppercase mb-1">Goles UT</label>
                             <input
                                 type="number"
                                 className="w-full bg-black/20 border border-white/10 rounded p-2 focus:border-accent-green outline-none"
