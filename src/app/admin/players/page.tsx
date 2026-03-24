@@ -15,6 +15,7 @@ export default function ManagePlayers() {
     const [lastName, setLastName] = useState('')
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
+    const [position, setPosition] = useState('DEF')
     const [message, setMessage] = useState({ text: '', type: '' })
 
     const router = useRouter()
@@ -64,7 +65,8 @@ export default function ManagePlayers() {
                     username: username.trim(),
                     password: password.trim(),
                     role: 'player',
-                    team_id: currentUser.team_id
+                    team_id: currentUser.team_id,
+                    position: position
                 }
             ])
             .select()
@@ -78,6 +80,7 @@ export default function ManagePlayers() {
             setLastName('')
             setUsername('')
             setPassword('')
+            setPosition('DEF')
         }
     }
 
@@ -155,7 +158,19 @@ export default function ManagePlayers() {
                                 required
                             />
                         </div>
-                        
+                        <div>
+                            <label className="block text-[10px] uppercase text-gray-400 mb-1 font-bold tracking-widest">Posición</label>
+                            <select
+                                className="w-full bg-black/40 border border-white/10 rounded p-2 text-sm focus:border-accent-green outline-none text-white"
+                                value={position}
+                                onChange={e => setPosition(e.target.value)}
+                            >
+                                <option value="ARQ">ARQ</option>
+                                <option value="DEF">DEF</option>
+                                <option value="MED">MED</option>
+                                <option value="DEL">DEL</option>
+                            </select>
+                        </div>
                         {message.text && (
                             <p className={`text-[10px] p-2 rounded font-bold uppercase tracking-widest ${message.type === 'error' ? 'bg-danger-red/20 text-danger-red' : message.type === 'success' ? 'bg-accent-green/20 text-accent-green' : 'text-gray-400'}`}>
                                 {message.text}
@@ -195,13 +210,16 @@ export default function ManagePlayers() {
                                         </div>
                                         <div>
                                             <label className="block text-[10px] text-gray-400 uppercase mb-1 font-bold tracking-widest">Posición</label>
-                                            <input
-                                                type="text"
-                                                className="w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-sm focus:border-accent-green outline-none placeholder:text-gray-600"
-                                                value={player.position || ''}
-                                                placeholder="Ej: Defensor"
+                                            <select
+                                                className="w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-sm focus:border-accent-green outline-none text-white"
+                                                value={player.position || 'DEF'}
                                                 onChange={(e) => handleUpdate(player.id, 'position', e.target.value)}
-                                            />
+                                            >
+                                                <option value="ARQ">ARQ</option>
+                                                <option value="DEF">DEF</option>
+                                                <option value="MED">MED</option>
+                                                <option value="DEL">DEL</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
