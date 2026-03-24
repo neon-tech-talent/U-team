@@ -101,28 +101,30 @@ function JerseyIcon({ styleId, selected }: { styleId: string, selected: boolean 
                 </linearGradient>
             </defs>
             
-            {/* Outline & Drop Shadow layer inside the SVG frame */}
-            <path d={shirtPath} fill="none" stroke="#000" strokeWidth="8" className="opacity-40" transform="translate(0, 3)" />
-            
-            {/* Base Color Fill */}
-            <path d={shirtPath} fill={primaryStr} />
-            
-            {/* Clip Group for patterns to stay inside the shirt bounds */}
-            <g clipPath={`url(#shirtClip-${styleId})`}>
-                {renderPattern()}
+            <g transform="translate(5, 5) scale(0.9)">
+                {/* Outline & Drop Shadow layer inside the SVG frame */}
+                <path d={shirtPath} fill="none" stroke="#000" strokeWidth="8" className="opacity-40" transform="translate(0, 3)" />
                 
-                {/* 3D Overlays (Applies to both base and pattern) */}
-                <rect width="100" height="100" fill="url(#shading-shadow)" pointerEvents="none" />
-                <rect width="100" height="100" fill="url(#shading-crease)" pointerEvents="none" />
+                {/* Base Color Fill */}
+                <path d={shirtPath} fill={primaryStr} />
                 
-                {/* Neck and sleeve trims for realism */}
-                <path d="M 35 12 C 45 20, 55 20, 65 12" fill="none" stroke={trimColor} strokeWidth="4" />
-                <line x1="12" y1="20" x2="20" y2="45" stroke={trimColor} strokeWidth="3" />
-                <line x1="88" y1="20" x2="80" y2="45" stroke={trimColor} strokeWidth="3" />
+                {/* Clip Group for patterns to stay inside the shirt bounds */}
+                <g clipPath={`url(#shirtClip-${styleId})`}>
+                    {renderPattern()}
+                    
+                    {/* 3D Overlays (Applies to both base and pattern) */}
+                    <rect width="100" height="100" fill="url(#shading-shadow)" pointerEvents="none" />
+                    <rect width="100" height="100" fill="url(#shading-crease)" pointerEvents="none" />
+                    
+                    {/* Neck and sleeve trims for realism */}
+                    <path d="M 35 12 C 45 20, 55 20, 65 12" fill="none" stroke={trimColor} strokeWidth="4" />
+                    <line x1="12" y1="20" x2="20" y2="45" stroke={trimColor} strokeWidth="3" />
+                    <line x1="88" y1="20" x2="80" y2="45" stroke={trimColor} strokeWidth="3" />
+                </g>
+                
+                {/* Outer border for sharpness */}
+                <path d={shirtPath} fill="none" stroke="#1f2937" strokeWidth="1.5" strokeLinejoin="round" />
             </g>
-            
-            {/* Outer border for sharpness */}
-            <path d={shirtPath} fill="none" stroke="#1f2937" strokeWidth="1.5" strokeLinejoin="round" />
         </svg>
     )
 }
