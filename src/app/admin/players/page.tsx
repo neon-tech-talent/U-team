@@ -16,6 +16,7 @@ export default function ManagePlayers() {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [position, setPosition] = useState('DEF')
+    const [playerNumber, setPlayerNumber] = useState<string>('')
     const [message, setMessage] = useState({ text: '', type: '' })
 
     const router = useRouter()
@@ -48,8 +49,14 @@ export default function ManagePlayers() {
 
     const handleCreatePlayer = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!firstName || !lastName || !username || !password) {
+        if (!firstName || !lastName || !username || !password || !playerNumber) {
             setMessage({ text: 'Todos los campos son obligatorios', type: 'error' })
+            return
+        }
+
+        const num = parseInt(playerNumber)
+        if (num < 1 || num > 99) {
+            setMessage({ text: 'El dorsal debe estar entre 1 y 99', type: 'error' })
             return
         }
 
@@ -66,7 +73,8 @@ export default function ManagePlayers() {
                     password: password.trim(),
                     role: 'player',
                     team_id: currentUser.team_id,
-                    position: position
+                    position: position,
+                    number: num
                 }
             ])
             .select()
@@ -81,10 +89,16 @@ export default function ManagePlayers() {
             setUsername('')
             setPassword('')
             setPosition('DEF')
+            setPlayerNumber('')
         }
     }
 
     const handleUpdate = async (id: string, field: string, value: any) => {
+        if (field === 'number') {
+            const num = parseInt(value)
+            if (isNaN(num) || num < 1 || num > 99) return
+        }
+
         const { error } = await supabase
             .from('players')
             .update({ [field]: value })
@@ -171,6 +185,18 @@ export default function ManagePlayers() {
                                 <option value="DEL">DEL</option>
                             </select>
                         </div>
+                        <div>
+                            <label className="block text-[10px] uppercase text-gray-400 mb-1 font-bold tracking-widest">Dorsal (1-99)</label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="99"
+                                className="w-full bg-black/40 border border-white/10 rounded p-2 text-sm focus:border-accent-green outline-none text-white"
+                                value={playerNumber}
+                                onChange={e => setPlayerNumber(e.target.value)}
+                                required
+                            />
+                        </div>
                         {message.text && (
                             <p className={`text-[10px] p-2 rounded font-bold uppercase tracking-widest ${message.type === 'error' ? 'bg-danger-red/20 text-danger-red' : message.type === 'success' ? 'bg-accent-green/20 text-accent-green' : 'text-gray-400'}`}>
                                 {message.text}
@@ -202,10 +228,12 @@ export default function ManagePlayers() {
                                             <label className="block text-[10px] text-gray-400 uppercase mb-1 font-bold tracking-widest">Dorsal</label>
                                             <input
                                                 type="number"
-                                                className="w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-sm focus:border-accent-green outline-none placeholder:text-gray-600"
+                                                min="1"
+                                                max="99"
+                                                className="w-full bg-black/40 border border-white/10 rounded px-2 py-1 text-sm focus:border-accent-green outline-none text-white"
                                                 value={player.number || ''}
-                                                placeholder="N°"
-                                                onChange={(e) => handleUpdate(player.id, 'number', parseInt(e.target.value))}
+                                                placeholder="1-99"
+                                                onChange={(e) => handleUpdate(player.id, 'number', e.target.value)}
                                             />
                                         </div>
                                         <div>
