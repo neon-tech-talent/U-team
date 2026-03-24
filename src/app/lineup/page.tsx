@@ -9,6 +9,8 @@ import { getPlayers } from '@/lib/db'
 import { toJpeg } from 'html-to-image'
 import download from 'downloadjs'
 
+import { JerseyIcon } from '@/components/JerseyIcon'
+
 type Player = {
     id: string
     full_name: string
@@ -23,6 +25,7 @@ export default function LineupGenerator() {
     const [selectedIds, setSelectedIds] = useState<string[]>([])
     const [formation, setFormation] = useState<FormationKey>('2-3-1')
     const [teamName, setTeamName] = useState('Ultimate Team')
+    const [teamSettings, setTeamSettings] = useState({ shirt_style: 'solid', primary_color: '#ffffff', secondary_color: '#000000' })
     const [loading, setLoading] = useState(true)
     const pitchRef = useRef<HTMLDivElement>(null)
     const router = useRouter()
@@ -37,8 +40,15 @@ export default function LineupGenerator() {
             const user = JSON.parse(userStr)
 
             if (user.team_id) {
-                const { data: tData } = await supabase.from('teams').select('name').eq('id', user.team_id).single()
-                if (tData) setTeamName(tData.name)
+                const { data: tData } = await supabase.from('teams').select('name, shirt_style, primary_color, secondary_color').eq('id', user.team_id).single()
+                if (tData) {
+                    setTeamName(tData.name)
+                    setTeamSettings({
+                        shirt_style: tData.shirt_style || 'solid',
+                        primary_color: tData.primary_color || '#7b8c94',
+                        secondary_color: tData.secondary_color || '#1d2834'
+                    })
+                }
             }
 
             const { data } = await getPlayers(user.team_id)
