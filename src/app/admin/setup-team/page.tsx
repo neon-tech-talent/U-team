@@ -17,59 +17,69 @@ const SHIRT_MODELS = [
     { id: 'many_vertical_stripes', name: 'RAYAS VERTICALES' },
 ]
 
-function JerseyIcon({ styleId, selected }: { styleId: string, selected: boolean }) {
-    // Exact muted slate/navy colors from the target image
-    let primaryStr = '#7b8c94'; 
-    const secondaryStr = '#1d2834'; 
+const TEAM_COLORS = [
+    '#ffffff', // White
+    '#e2e8f0', // Light Grey
+    '#7b8c94', // Dusty Slate
+    '#1d2834', // Navy
+    '#000000', // Black
+    '#7f1d1d', // Dark Red
+    '#dc2626', // Red
+    '#ea580c', // Orange
+    '#fbbf24', // Yellow
+    '#16a34a', // Green
+    '#065f46', // Dark Green
+    '#0891b2', // Cyan
+    '#2563eb', // Royal Blue
+    '#1e3a8a', // Dark Blue
+    '#4c1d95', // Indigo/Purple
+    '#db2777'  // Pink
+]
 
-    // Horizontal band has a white base
-    if (styleId === 'horizontal_band') {
-        primaryStr = '#e2e8f0'; 
-    }
-
+function JerseyIcon({ styleId, selected, primaryColor = '#7b8c94', secondaryColor = '#1d2834' }: { styleId: string, selected?: boolean, primaryColor?: string, secondaryColor?: string }) {
     // Slender, realistic T-Shirt path
     const shirtPath = "M 40 10 Q 50 18, 60 10 L 82 20 L 78 40 L 68 35 L 70 95 Q 50 100, 30 95 L 32 35 L 22 40 L 18 20 Z";
     
-    // Smooth trim for the neck and sleeves
+    // Smooth trim for the neck and sleeves (always dark for contrast, or dynamically driven? We'll keep it dark slate for realism)
     const trimColor = '#111827';
 
     const renderPattern = () => {
         switch (styleId) {
-            case 'horizontal_band': return <rect y="40" width="100" height="25" fill={secondaryStr} />;
+            case 'horizontal_band': return <rect y="40" width="100" height="25" fill={secondaryColor} />;
             case 'hoops': return (
                 <>
-                    <rect y="18" width="100" height="8" fill={secondaryStr} />
-                    <rect y="36" width="100" height="8" fill={secondaryStr} />
-                    <rect y="54" width="100" height="8" fill={secondaryStr} />
-                    <rect y="72" width="100" height="8" fill={secondaryStr} />
-                    <rect y="90" width="100" height="8" fill={secondaryStr} />
+                    <rect y="18" width="100" height="8" fill={secondaryColor} />
+                    <rect y="36" width="100" height="8" fill={secondaryColor} />
+                    <rect y="54" width="100" height="8" fill={secondaryColor} />
+                    <rect y="72" width="100" height="8" fill={secondaryColor} />
+                    <rect y="90" width="100" height="8" fill={secondaryColor} />
                 </>
             );
-            case 'halves': return <rect width="50" height="100" fill={secondaryStr} />;
-            case 'diagonal': return <polygon points="-10,0 25,0 110,100 75,100" fill={secondaryStr} />;
-            case 'center_stripe': return <rect x="38" width="24" height="100" fill={secondaryStr} />;
+            case 'halves': return <rect width="50" height="100" fill={secondaryColor} />;
+            case 'diagonal': return <polygon points="-10,0 25,0 110,100 75,100" fill={secondaryColor} />;
+            case 'center_stripe': return <rect x="38" width="24" height="100" fill={secondaryColor} />;
             case 'quarters': return (
                 <>
-                    <rect width="50" height="50" fill={secondaryStr} />
-                    <rect x="50" y="50" width="50" height="100" fill={secondaryStr} />
+                    <rect width="50" height="50" fill={secondaryColor} />
+                    <rect x="50" y="50" width="50" height="100" fill={secondaryColor} />
                 </>
             );
-            case 'chevron': return <polygon points="-10,30 50,60 110,30 110,50 50,80 -10,50" fill={secondaryStr} />;
+            case 'chevron': return <polygon points="-10,30 50,60 110,30 110,50 50,80 -10,50" fill={secondaryColor} />;
             case 'thick_vertical_stripes': return (
                 <>
-                    <rect x="25" width="12" height="100" fill={secondaryStr} />
-                    <rect x="44" width="12" height="100" fill={secondaryStr} />
-                    <rect x="63" width="12" height="100" fill={secondaryStr} />
+                    <rect x="25" width="12" height="100" fill={secondaryColor} />
+                    <rect x="44" width="12" height="100" fill={secondaryColor} />
+                    <rect x="63" width="12" height="100" fill={secondaryColor} />
                 </>
             );
             case 'many_vertical_stripes': return (
                 <>
-                    <rect x="20" width="6" height="100" fill={secondaryStr} />
-                    <rect x="32" width="6" height="100" fill={secondaryStr} />
-                    <rect x="44" width="6" height="100" fill={secondaryStr} />
-                    <rect x="56" width="6" height="100" fill={secondaryStr} />
-                    <rect x="68" width="6" height="100" fill={secondaryStr} />
-                    <rect x="80" width="6" height="100" fill={secondaryStr} />
+                    <rect x="20" width="6" height="100" fill={secondaryColor} />
+                    <rect x="32" width="6" height="100" fill={secondaryColor} />
+                    <rect x="44" width="6" height="100" fill={secondaryColor} />
+                    <rect x="56" width="6" height="100" fill={secondaryColor} />
+                    <rect x="68" width="6" height="100" fill={secondaryColor} />
+                    <rect x="80" width="6" height="100" fill={secondaryColor} />
                 </>
             );
             default: return null; 
@@ -88,7 +98,7 @@ function JerseyIcon({ styleId, selected }: { styleId: string, selected: boolean 
                     <stop offset="0%" stopColor="#fff" stopOpacity="0.4" />
                     <stop offset="40%" stopColor="#fff" stopOpacity="0.05" />
                     <stop offset="80%" stopColor="#000" stopOpacity="0.1" />
-                    <stop offset="100%" stopColor="#000" stopOpacity="0.5" />
+                    <stop offset="100%" stopColor="#000" stopOpacity="0.6" />
                 </linearGradient>
                 
                 {/* Cylindrical horizontal shading */}
@@ -97,7 +107,7 @@ function JerseyIcon({ styleId, selected }: { styleId: string, selected: boolean 
                     <stop offset="25%" stopColor="#fff" stopOpacity="0.15" />
                     <stop offset="50%" stopColor="#fff" stopOpacity="0.25" />
                     <stop offset="80%" stopColor="#000" stopOpacity="0.1" />
-                    <stop offset="100%" stopColor="#000" stopOpacity="0.5" />
+                    <stop offset="100%" stopColor="#000" stopOpacity="0.4" />
                 </linearGradient>
             </defs>
             
@@ -105,7 +115,7 @@ function JerseyIcon({ styleId, selected }: { styleId: string, selected: boolean 
             <path d={shirtPath} fill="none" stroke="#000" strokeWidth="6" className="opacity-50" transform="translate(0, 3)" />
             
             {/* Base Color Fill */}
-            <path d={shirtPath} fill={primaryStr} />
+            <path d={shirtPath} fill={primaryColor} />
             
             {/* Clip Group for patterns to stay inside the shirt bounds */}
             <g clipPath={`url(#shirtClip-${styleId})`}>
@@ -130,6 +140,10 @@ function JerseyIcon({ styleId, selected }: { styleId: string, selected: boolean 
 export default function SetupTeamPage() {
     const [teamName, setTeamName] = useState('')
     const [shirtStyle, setShirtStyle] = useState('horizontal_band')
+    const [primaryColor, setPrimaryColor] = useState(TEAM_COLORS[1]) // Light Grey
+    const [secondaryColor, setSecondaryColor] = useState(TEAM_COLORS[3]) // Navy
+    const [activeColorSelector, setActiveColorSelector] = useState<'primary' | 'secondary'>('primary')
+    
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [user, setUser] = useState<any>(null)
@@ -160,10 +174,18 @@ export default function SetupTeamPage() {
         setLoading(true)
         setError(null)
 
+        const finalSecondaryColor = shirtStyle === 'solid' ? primaryColor : secondaryColor
+
         // 1. Create the team
         const { data: teamData, error: teamError } = await supabase
             .from('teams')
-            .insert([{ name: teamName, admin_id: user.id, shirt_style: shirtStyle }])
+            .insert([{ 
+                name: teamName, 
+                admin_id: user.id, 
+                shirt_style: shirtStyle,
+                primary_color: primaryColor,
+                secondary_color: finalSecondaryColor
+            }])
             .select()
             .single()
 
@@ -190,6 +212,12 @@ export default function SetupTeamPage() {
         localStorage.setItem('user', JSON.stringify(updatedUser))
         
         router.push('/')
+    }
+
+    const toggleInvertColors = () => {
+        const temp = primaryColor
+        setPrimaryColor(secondaryColor)
+        setSecondaryColor(temp)
     }
 
     if (!user) return null
@@ -225,7 +253,7 @@ export default function SetupTeamPage() {
 
                     <div className="pt-4 border-t border-white/5">
                         <label className="block text-[10px] font-black mb-4 uppercase tracking-[0.2em] text-[#8ba19e] text-center">Diseño de Camiseta</label>
-                        <div className="grid grid-cols-3 md:grid-cols-5 gap-2 md:gap-3 max-h-[380px] overflow-y-auto pr-2 pb-2 select-none custom-scrollbar">
+                        <div className="grid grid-cols-3 md:grid-cols-5 gap-2 md:gap-3 max-h-[280px] md:max-h-[380px] overflow-y-auto pr-2 pb-2 select-none custom-scrollbar">
                             {SHIRT_MODELS.map(model => (
                                 <button
                                     key={model.id}
@@ -251,8 +279,70 @@ export default function SetupTeamPage() {
                                         </div>
                                     )}
 
-                                    <JerseyIcon styleId={model.id} selected={shirtStyle === model.id} />
+                                    <JerseyIcon styleId={model.id} selected={shirtStyle === model.id} primaryColor={primaryColor} secondaryColor={secondaryColor} />
                                     <span className="text-[9px] font-black uppercase text-center leading-tight mb-2 flex-grow flex items-end justify-center w-full px-1">{model.name}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-white/5">
+                        <div className="flex justify-between items-center mb-4">
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[#8ba19e]">Colores del Equipo</label>
+                            {shirtStyle !== 'solid' && (
+                                <button
+                                    type="button"
+                                    onClick={toggleInvertColors}
+                                    className="text-[10px] font-bold text-accent-green hover:text-white flex items-center gap-1 transition-colors uppercase"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3"/><path d="m15 9 6-6"/></svg>
+                                    Invertir
+                                </button>
+                            )}
+                        </div>
+
+                        <div className="flex items-center gap-2 md:gap-4 mb-3">
+                            <button
+                                type="button"
+                                onClick={() => setActiveColorSelector('primary')}
+                                className={`flex-1 p-2 md:p-3 rounded-xl flex items-center justify-center gap-2 border-2 transition-all ${activeColorSelector === 'primary' ? 'border-accent-green bg-accent-green/10' : 'border-transparent bg-white/5 hover:bg-white/10'}`}
+                            >
+                                <div className="w-5 h-5 rounded-full border border-white/20 shadow-inner" style={{ backgroundColor: primaryColor }} />
+                                <span className={`text-[9px] md:text-[10px] font-bold uppercase ${activeColorSelector === 'primary' ? 'text-white' : 'text-gray-400'}`}>
+                                    {shirtStyle === 'solid' ? 'Color' : 'Base'}
+                                </span>
+                            </button>
+
+                            {shirtStyle !== 'solid' && (
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveColorSelector('secondary')}
+                                    className={`flex-1 p-2 md:p-3 rounded-xl flex items-center justify-center gap-2 border-2 transition-all ${activeColorSelector === 'secondary' ? 'border-accent-green bg-accent-green/10' : 'border-transparent bg-white/5 hover:bg-white/10'}`}
+                                >
+                                    <div className="w-5 h-5 rounded-full border border-white/20 shadow-inner" style={{ backgroundColor: secondaryColor }} />
+                                    <span className={`text-[9px] md:text-[10px] font-bold uppercase ${activeColorSelector === 'secondary' ? 'text-white' : 'text-gray-400'}`}>Secundario</span>
+                                </button>
+                            )}
+                        </div>
+
+                        <div className="grid grid-cols-8 gap-1.5 md:gap-2 p-3 bg-black/40 rounded-xl border border-white/5 mx-auto max-w-sm">
+                            {TEAM_COLORS.map(color => (
+                                <button
+                                    key={color}
+                                    type="button"
+                                    onClick={() => {
+                                        if (activeColorSelector === 'primary') setPrimaryColor(color)
+                                        else setSecondaryColor(color)
+                                    }}
+                                    className="w-full aspect-square rounded-full transition-all relative overflow-hidden shadow-inner border border-white/10 hover:scale-110"
+                                    style={{ backgroundColor: color }}
+                                    title={color}
+                                >
+                                    {(activeColorSelector === 'primary' ? primaryColor === color : secondaryColor === color) && (
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                            <svg className="w-4 h-4 text-white drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                        </div>
+                                    )}
                                 </button>
                             ))}
                         </div>
