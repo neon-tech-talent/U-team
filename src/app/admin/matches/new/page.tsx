@@ -250,7 +250,7 @@ export default function NewMatch() {
 
                 <button
                     type="submit"
-                    className="fixed bottom-6 right-6 left-6 md:relative md:bottom-0 md:right-0 md:left-0 py-4 bg-accent-green text-black font-black uppercase text-lg rounded-xl shadow-2xl flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-transform"
+                    className="fixed bottom-6 right-6 left-6 md:relative md:bottom-0 md:right-0 md:left-0 py-3 md:px-10 bg-accent-green text-black font-black uppercase text-base rounded-xl shadow-2xl flex items-center justify-center gap-3 hover:scale-105 active:scale-95 transition-all md:w-fit mx-auto"
                 >
                     <Save size={24} /> Guardar Partido
                 </button>
