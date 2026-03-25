@@ -39,7 +39,6 @@ export default function ManagePlayers() {
                 .from('players')
                 .select('*')
                 .eq('team_id', user.team_id)
-                .eq('role', 'player')
                 .order('full_name', { ascending: true })
             setPlayers(data || [])
             setLoading(false)
@@ -219,7 +218,12 @@ export default function ManagePlayers() {
                             <div key={player.id} className="soccer-card !p-4 border-white/5 bg-black/40">
                                 <div className="flex flex-col gap-4">
                                     <div className="flex items-center justify-between">
-                                        <span className="font-bold text-accent-green uppercase">{player.full_name}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold text-accent-green uppercase">{player.full_name}</span>
+                                            {player.role === 'admin' && (
+                                                <span className="text-[8px] bg-accent-green/20 text-accent-green px-1.5 py-0.5 rounded font-black uppercase tracking-tighter shadow-sm border border-accent-green/30">Delegado</span>
+                                            )}
+                                        </div>
                                         <span className="text-[10px] text-gray-500 uppercase tracking-widest bg-white/5 px-2 py-1 rounded">@{player.username}</span>
                                     </div>
 
