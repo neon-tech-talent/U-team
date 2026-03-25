@@ -4,7 +4,6 @@ export async function getPlayers(teamId?: string) {
     let query = supabase
         .from('players')
         .select('*')
-        .eq('role', 'player')
         .order('full_name', { ascending: true })
         
     if (teamId) {
