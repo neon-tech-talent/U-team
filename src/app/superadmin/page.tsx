@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { LogOut, UserPlus, Shield } from 'lucide-react'
+import { LogOut, UserPlus, Shield, Pause, Play, Trash2 } from 'lucide-react'
 
 export default function SuperadminDashboard() {
     const [admins, setAdmins] = useState<any[]>([])
@@ -56,7 +56,8 @@ export default function SuperadminDashboard() {
                     username,
                     password,
                     role: 'admin',
-                    is_admin: true // Legacy support if needed elsewhere
+                    is_admin: true,
+                    is_active: true
                 }
             ])
 
@@ -67,6 +68,34 @@ export default function SuperadminDashboard() {
             setName('')
             setUsername('')
             setPassword('')
+            fetchAdmins()
+        }
+    }
+
+    const handleToggleActive = async (id: string, currentStatus: boolean) => {
+        const { error } = await supabase
+            .from('players')
+            .update({ is_active: !currentStatus })
+            .eq('id', id)
+        
+        if (error) {
+            alert('Error al actualizar: ' + error.message)
+        } else {
+            fetchAdmins()
+        }
+    }
+
+    const handleDeleteAdmin = async (id: string, adminName: string) => {
+        if (!confirm(`¿Estás seguro de que deseas eliminar al administrador "${adminName}"? Esta acción no se puede deshacer.`)) return
+
+        const { error } = await supabase
+            .from('players')
+            .delete()
+            .eq('id', id)
+        
+        if (error) {
+            alert('Error al eliminar: ' + error.message)
+        } else {
             fetchAdmins()
         }
     }
@@ -163,13 +192,31 @@ export default function SuperadminDashboard() {
                             <p className="text-gray-500 text-xs uppercase font-bold tracking-widest text-center py-8">No hay administradores</p>
                         ) : (
                             admins.map(admin => (
-                                <div key={admin.id} className="bg-black/20 border border-white/5 p-3 rounded flex justify-between items-center">
-                                    <div>
-                                        <p className="font-bold text-sm">{admin.full_name}</p>
+                                <div key={admin.id} className={`bg-black/20 border p-3 rounded flex justify-between items-center transition-all ${admin.is_active === false ? 'border-danger-red/30 opacity-60' : 'border-white/5'}`}>
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-bold text-sm tracking-tight">{admin.full_name}</p>
+                                            {admin.is_active === false && (
+                                                <span className="text-[8px] bg-danger-red/20 text-danger-red px-1.5 py-0.5 rounded font-black uppercase">Pausado</span>
+                                            )}
+                                        </div>
                                         <p className="text-[10px] text-accent-green tracking-widest uppercase">@{admin.username}</p>
                                     </div>
-                                    <div className="text-[10px] text-gray-500 uppercase font-bold bg-white/5 px-2 py-1 rounded">
-                                        Admin
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => handleToggleActive(admin.id, admin.is_active !== false)}
+                                            className={`p-2 rounded-lg transition-colors ${admin.is_active === false ? 'bg-accent-green text-black hover:brightness-110' : 'bg-black/40 text-gray-400 hover:text-white'}`}
+                                            title={admin.is_active === false ? 'Reactivar' : 'Pausar'}
+                                        >
+                                            {admin.is_active === false ? <Play size={14} fill="currentColor" /> : <Pause size={14} />}
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteAdmin(admin.id, admin.full_name)}
+                                            className="p-2 bg-black/40 text-gray-400 hover:text-danger-red hover:bg-danger-red/10 rounded-lg transition-all"
+                                            title="Eliminar"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
                                     </div>
                                 </div>
                             ))

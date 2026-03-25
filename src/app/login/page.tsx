@@ -30,6 +30,13 @@ export default function LoginPage() {
             return
         }
 
+        // Bloqueo si el usuario está pausado
+        if (data.is_active === false) {
+            setError('Tu usuario ha sido PAUSADO por el Super Administrador. Contacta soporte.')
+            setLoading(false)
+            return
+        }
+
         if (data.password && password === data.password) {
             localStorage.setItem('user', JSON.stringify(data))
             
