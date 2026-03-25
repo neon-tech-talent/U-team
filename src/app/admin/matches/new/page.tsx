@@ -15,6 +15,7 @@ export default function NewMatch() {
     const [goalsRival, setGoalsRival] = useState(0)
     const [playerStats, setPlayerStats] = useState<any>({})
     const [currentUser, setCurrentUser] = useState<any>(null)
+    const [teamName, setTeamName] = useState('UT')
     const router = useRouter()
 
     useEffect(() => {
@@ -46,6 +47,14 @@ export default function NewMatch() {
                     }
                 })
                 setPlayerStats(initialStats)
+                
+                // Fetch team name
+                const { data: teamData } = await supabase
+                    .from('teams')
+                    .select('name')
+                    .eq('id', user.team_id)
+                    .single()
+                if (teamData) setTeamName(teamData.name)
             }
             setLoading(false)
         }
@@ -145,7 +154,7 @@ export default function NewMatch() {
                     </div>
                     <div className="flex gap-4">
                         <div className="flex-1">
-                            <label className="block text-xs text-gray-400 uppercase mb-1">Goles UT</label>
+                            <label className="block text-xs text-gray-400 uppercase mb-1">Goles {teamName}</label>
                             <input
                                 type="number"
                                 className="w-full bg-black/20 border border-white/10 rounded p-2 focus:border-accent-green outline-none"
