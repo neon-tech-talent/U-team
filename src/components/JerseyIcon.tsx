@@ -16,7 +16,7 @@ export function JerseyIcon({
     const trimColor = '#111827';
 
     // Horizontal band has a white base
-    const actualPrimary = styleId === 'horizontal_band' ? '#e2e8f0' : primaryColor;
+    const actualPrimary = primaryColor;
 
     const renderPattern = () => {
         switch (styleId) {
