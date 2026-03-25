@@ -37,6 +37,34 @@ export default function LoginPage() {
             return
         }
 
+        // Bloqueo en cascada para JUGADORES (si su administrador está pausado/eliminado)
+        if (data.role === 'player' && data.team_id) {
+            const { data: teamData } = await supabase
+                .from('teams')
+                .select('admin_id')
+                .eq('id', data.team_id)
+                .single()
+            
+            if (teamData && teamData.admin_id) {
+                const { data: adminData } = await supabase
+                    .from('players')
+                    .select('is_active')
+                    .eq('id', teamData.admin_id)
+                    .single()
+                
+                if (!adminData || adminData.is_active === false) {
+                    setError('Tu EQUIPO ha sido suspendido por el Super Administrador. Contacta a tu delegado.')
+                    setLoading(false)
+                    return
+                }
+            } else if (!teamData) {
+                // Si el equipo no existe (fue borrado)
+                setError('Tu equipo ya no existe en el sistema.')
+                setLoading(false)
+                return
+            }
+        }
+
         if (data.password && password === data.password) {
             localStorage.setItem('user', JSON.stringify(data))
             
