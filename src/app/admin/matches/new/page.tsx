@@ -16,6 +16,7 @@ export default function NewMatch() {
     const [playerStats, setPlayerStats] = useState<any>({})
     const [currentUser, setCurrentUser] = useState<any>(null)
     const [teamName, setTeamName] = useState('UT')
+    const [matchDuration, setMatchDuration] = useState(350)
     const router = useRouter()
 
     useEffect(() => {
@@ -48,13 +49,19 @@ export default function NewMatch() {
                 })
                 setPlayerStats(initialStats)
                 
-                // Fetch team name
+                // Fetch team settings
                 const { data: teamData } = await supabase
                     .from('teams')
-                    .select('name')
+                    .select('name, match_duration')
                     .eq('id', user.team_id)
                     .single()
-                if (teamData) setTeamName(teamData.name)
+                
+                if (teamData) {
+                    setTeamName(teamData.name)
+                    if (teamData.match_duration) {
+                        setMatchDuration(teamData.match_duration)
+                    }
+                }
             }
             setLoading(false)
         }
@@ -74,10 +81,10 @@ export default function NewMatch() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        // Validation: Total minutes <= 350
+        // Validation: Total minutes <= matchDuration
         const totalMinutes = Object.values(playerStats).reduce((acc: number, stat: any) => acc + (stat.minutes || 0), 0)
-        if (totalMinutes > 350) {
-            alert(`El total de minutos (${totalMinutes}) no puede superar los 350 minutos.`)
+        if (totalMinutes > matchDuration) {
+            alert(`El total de minutos (${totalMinutes}) no puede superar los ${matchDuration} minutos configurados para el equipo.`)
             return
         }
 
@@ -179,11 +186,11 @@ export default function NewMatch() {
                         <h3 className="font-bold uppercase flex items-center gap-2 text-accent-green">
                             <Plus size={18} /> Estadísticas de Jugadores
                         </h3>
-                        <div className={`px-3 py-1 rounded-full text-xs font-black uppercase ${Object.values(playerStats).reduce((acc: number, s: any) => acc + (s.minutes || 0), 0) > 350
+                        <div className={`px-3 py-1 rounded-full text-xs font-black uppercase ${Object.values(playerStats).reduce((acc: number, s: any) => acc + (s.minutes || 0), 0) > matchDuration
                             ? 'bg-danger-red text-white animate-pulse'
                             : 'bg-white/10 text-gray-400'
                             }`}>
-                            Total: {Object.values(playerStats).reduce((acc: number, s: any) => acc + (s.minutes || 0), 0)} / 350 Min
+                            Total: {Object.values(playerStats).reduce((acc: number, s: any) => acc + (s.minutes || 0), 0)} / {matchDuration} Min
                         </div>
                     </div>
                     <div className="space-y-2">

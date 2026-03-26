@@ -44,6 +44,7 @@ export default function SetupTeamPage() {
     const [primaryColor, setPrimaryColor] = useState(TEAM_COLORS[1]) // Light Grey
     const [secondaryColor, setSecondaryColor] = useState(TEAM_COLORS[3]) // Navy
     const [activeColorSelector, setActiveColorSelector] = useState<'primary' | 'secondary'>('primary')
+    const [matchDuration, setMatchDuration] = useState(350)
     
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -85,7 +86,8 @@ export default function SetupTeamPage() {
                 admin_id: user.id, 
                 shirt_style: shirtStyle,
                 primary_color: primaryColor,
-                secondary_color: finalSecondaryColor
+                secondary_color: finalSecondaryColor,
+                match_duration: matchDuration
             }])
             .select()
             .single()
@@ -150,6 +152,19 @@ export default function SetupTeamPage() {
                             placeholder="Ej: Los Leones FC"
                             required
                         />
+                    </div>
+
+                    <div className="pt-2">
+                        <label className="block text-[10px] font-black mb-2 uppercase tracking-[0.2em] text-[#8ba19e]">Tiempo total de juego (Suma de minutos del equipo)</label>
+                        <input
+                            type="number"
+                            className="w-full px-4 py-3 bg-black/40 border border-white/10 rounded-xl focus:outline-none focus:border-accent-green text-sm font-bold text-white transition-colors"
+                            value={matchDuration}
+                            onChange={(e) => setMatchDuration(parseInt(e.target.value))}
+                            placeholder="350"
+                            required
+                        />
+                        <p className="text-[10px] text-gray-500 mt-1 italic">Este valor limitará la carga de minutos de tus jugadores en cada partido.</p>
                     </div>
 
                     <div className="pt-4 border-t border-white/5">
