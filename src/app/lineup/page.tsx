@@ -120,8 +120,8 @@ export default function LineupGenerator() {
                     </section>
 
                     <section className="soccer-card border-white/10 bg-black/40 overflow-hidden">
-                        <h3 className="text-xs font-black uppercase text-gray-400 mb-4 tracking-widest flex justify-between">
-                            Convocados <span>{selectedIds.length} seleccionados</span>
+                        <h3 className="text-xs font-black uppercase text-gray-400 mb-4 tracking-widest">
+                            Convocados ({selectedIds.length})
                         </h3>
                         <div className="max-height-[400px] overflow-y-auto space-y-1 pr-2 custom-scrollbar">
                             {players.map(player => {
