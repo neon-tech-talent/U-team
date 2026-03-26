@@ -40,7 +40,24 @@ export default function ManagePlayers() {
                 .select('*')
                 .eq('team_id', user.team_id)
                 .order('full_name', { ascending: true })
-            setPlayers(data || [])
+            
+            // Limpieza de dorsales duplicados
+            if (data) {
+                const usedNumbers = new Set()
+                const cleanData = await Promise.all(data.map(async (p: any) => {
+                    if (p.number && usedNumbers.has(p.number)) {
+                        // Es un duplicado, lo limpiamos en la DB y en el estado
+                        await supabase.from('players').update({ number: null }).eq('id', p.id)
+                        return { ...p, number: null }
+                    } else if (p.number) {
+                        usedNumbers.add(p.number)
+                    }
+                    return p
+                }))
+                setPlayers(cleanData)
+            } else {
+                setPlayers([])
+            }
             setLoading(false)
         }
         init()
@@ -56,6 +73,13 @@ export default function ManagePlayers() {
         const num = parseInt(playerNumber)
         if (num < 1 || num > 99) {
             setMessage({ text: 'El dorsal debe estar entre 1 y 99', type: 'error' })
+            return
+        }
+
+        // Verificar duplicado localmente antes de crear
+        const exists = players.some(p => p.number === num)
+        if (exists) {
+            setMessage({ text: 'Error: El dorsal ya está en uso', type: 'error' })
             return
         }
 
@@ -96,6 +120,13 @@ export default function ManagePlayers() {
         if (field === 'number') {
             const num = parseInt(value)
             if (isNaN(num) || num < 1 || num > 99) return
+
+            // Verificar si otro jugador ya lo usa
+            const exists = players.some(p => p.id !== id && p.number === num)
+            if (exists) {
+                alert('El dorsal ya está en uso por otro jugador')
+                return
+            }
         }
 
         const { error } = await supabase
