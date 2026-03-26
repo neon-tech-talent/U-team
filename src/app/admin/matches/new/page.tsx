@@ -16,7 +16,8 @@ export default function NewMatch() {
     const [playerStats, setPlayerStats] = useState<any>({})
     const [currentUser, setCurrentUser] = useState<any>(null)
     const [teamName, setTeamName] = useState('UT')
-    const [matchDuration, setMatchDuration] = useState(350)
+    const [matchDuration, setMatchDuration] = useState(350) // Total team limit
+    const [individualLimit, setIndividualLimit] = useState(50) // Player limit
     const router = useRouter()
 
     useEffect(() => {
@@ -59,12 +60,14 @@ export default function NewMatch() {
                 if (teamData) {
                     setTeamName(teamData.name)
                     if (teamData.match_duration) {
-                        // Si es un valor pequeño (e.g. 50), lo multiplicamos por 7 titulares
-                        // Si ya es un valor grande (legacy 350), lo dejamos como está para compatibilidad
-                        const limit = teamData.match_duration <= 100 
-                            ? teamData.match_duration * 7 
-                            : teamData.match_duration
-                        setMatchDuration(limit)
+                        const baseVal = teamData.match_duration
+                        // If it's a small value (legacy/new 50), it is the individual limit
+                        // If it's a large value (legacy 350), we deduce individual limit (350/7=50)
+                        const playerLimit = baseVal <= 100 ? baseVal : Math.floor(baseVal / 7)
+                        const teamLimit = baseVal <= 100 ? baseVal * 7 : baseVal
+                        
+                        setIndividualLimit(playerLimit)
+                        setMatchDuration(teamLimit)
                     }
                 }
             }
@@ -74,6 +77,13 @@ export default function NewMatch() {
     }, [router])
 
     const handleStatChange = (playerId: string, stat: string, value: any) => {
+        if (stat === 'minutes') {
+            const mins = parseInt(value) || 0
+            if (mins > individualLimit) {
+                alert(`Un jugador no puede jugar más de ${individualLimit} minutos (duración del partido).`)
+                return
+            }
+        }
         setPlayerStats((prev: any) => ({
             ...prev,
             [playerId]: {
