@@ -10,7 +10,9 @@ import { supabase } from '@/lib/supabase'
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
-  const [matches, setMatches] = useState<any[]>([])
+  const [allMatches, setAllMatches] = useState<any[]>([])
+  const [tournaments, setTournaments] = useState<any[]>([])
+  const [selectedTournament, setSelectedTournament] = useState<string>('ALL')
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
@@ -43,7 +45,22 @@ export default function Dashboard() {
         }
 
         const { data } = await query
-        setMatches(data || [])
+        setAllMatches(data || [])
+
+        // Fetch tournaments
+        if (u.team_id) {
+          const { data: tData } = await supabase
+            .from('tournaments')
+            .select('*')
+            .eq('team_id', u.team_id)
+            .order('created_at', { ascending: false })
+          if (tData) {
+            setTournaments(tData)
+            const current = tData.find((t: any) => t.is_current)
+            if (current) setSelectedTournament(current.id)
+          }
+        }
+
         setLoading(false)
       }
       fetchData()
@@ -56,6 +73,11 @@ export default function Dashboard() {
   }
 
   if (!user || loading) return <div className="p-8 text-center uppercase font-bold tracking-widest text-accent-green">Cargando...</div>
+
+  // Filter matches by tournament
+  const matches = selectedTournament === 'ALL'
+    ? allMatches
+    : allMatches.filter(m => m.tournament_id === selectedTournament)
 
   const stats = matches.reduce((acc, m) => {
     acc.pj++
@@ -169,10 +191,24 @@ export default function Dashboard() {
 
       {/* Recent Matches */}
       <section>
-        <h3 className="text-lg font-black mb-4 uppercase flex items-center gap-2 tracking-tighter">
-          <span className="w-1.5 h-6 bg-accent-green inline-block"></span>
-          Partidos Recientes
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-black uppercase flex items-center gap-2 tracking-tighter">
+            <span className="w-1.5 h-6 bg-accent-green inline-block"></span>
+            Partidos Recientes
+          </h3>
+          {tournaments.length > 0 && (
+            <select
+              className="bg-black/40 border border-white/10 rounded-lg px-2 py-1 text-xs font-bold focus:outline-none focus:border-accent-green"
+              value={selectedTournament}
+              onChange={(e) => setSelectedTournament(e.target.value)}
+            >
+              <option value="ALL">Todos</option>
+              {tournaments.map((t: any) => (
+                <option key={t.id} value={t.id}>{t.name}{t.is_current ? ' ★' : ''}</option>
+              ))}
+            </select>
+          )}
+        </div>
         <div className="space-y-3">
           {matches.length === 0 ? (
             <div className="text-center p-8 bg-black/20 rounded-xl border border-dashed border-white/10 text-gray-500 uppercase text-xs font-bold tracking-widest">

@@ -3,37 +3,54 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { ChevronLeft, LogOut, User, Target, Zap, Award } from 'lucide-react'
+import { ChevronLeft, LogOut, User, Target, Zap, Award, Trophy } from 'lucide-react'
 
 export default function Profile() {
     const [user, setUser] = useState<any>(null)
-    const [stats, setStats] = useState<any[]>([])
+    const [allStats, setAllStats] = useState<any[]>([])
+    const [tournaments, setTournaments] = useState<any[]>([])
+    const [selectedTournament, setSelectedTournament] = useState<string>('ALL')
     const [loading, setLoading] = useState(true)
     const router = useRouter()
 
     useEffect(() => {
         const savedUser = localStorage.getItem('user')
-        if (!savedUser) {
-            router.push('/login')
-            return
-        }
+        if (!savedUser) { router.push('/login'); return }
         const u = JSON.parse(savedUser)
         setUser(u)
 
-        async function fetchStats() {
+        async function fetchData() {
+            // Fetch all match_stats with match info (including tournament)
             const { data } = await supabase
                 .from('match_stats')
-                .select('*, matches(*)')
+                .select('*, matches(*, tournaments(*))')
                 .eq('player_id', u.id)
                 .eq('played', true)
+            setAllStats(data || [])
 
-            setStats(data || [])
+            // Fetch tournaments for team
+            if (u.team_id) {
+                const { data: tData } = await supabase
+                    .from('tournaments')
+                    .select('*')
+                    .eq('team_id', u.team_id)
+                    .order('created_at', { ascending: false })
+                setTournaments(tData || [])
+                // Pre-select current tournament if exists
+                const current = tData?.find((t: any) => t.is_current)
+                if (current) setSelectedTournament(current.id)
+            }
             setLoading(false)
         }
-        fetchStats()
+        fetchData()
     }, [router])
 
     if (loading || !user) return <div className="p-8 text-center uppercase font-bold tracking-widest text-accent-green">Cargando...</div>
+
+    // Filter stats by tournament
+    const stats = selectedTournament === 'ALL'
+        ? allStats
+        : allStats.filter(s => s.matches?.tournament_id === selectedTournament)
 
     const totals = stats.reduce((acc, curr) => ({
         matches: acc.matches + 1,
@@ -65,6 +82,23 @@ export default function Profile() {
                     <p className="text-accent-green font-bold text-xs md:text-sm tracking-widest uppercase">{user.position || 'JUGADOR'}</p>
                 </div>
             </div>
+
+            {/* Tournament Filter */}
+            {tournaments.length > 0 && (
+                <div className="soccer-card !p-3 border-white/10 bg-black/40 flex items-center gap-3">
+                    <Trophy size={16} className="text-accent-green shrink-0" />
+                    <select
+                        className="flex-1 bg-transparent text-sm font-bold focus:outline-none"
+                        value={selectedTournament}
+                        onChange={(e) => setSelectedTournament(e.target.value)}
+                    >
+                        <option value="ALL">TOTAL (Todos los torneos)</option>
+                        {tournaments.map((t: any) => (
+                            <option key={t.id} value={t.id}>{t.name}{t.is_current ? ' ★' : ''}</option>
+                        ))}
+                    </select>
+                </div>
+            )}
 
             {/* Totals Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -115,10 +149,7 @@ export default function Profile() {
                             onClick={async () => {
                                 const pass = (document.getElementById('new-password') as HTMLInputElement).value
                                 if (!pass) return alert('Ingresa una contraseña')
-                                const { error } = await supabase
-                                    .from('players')
-                                    .update({ password: pass })
-                                    .eq('id', user.id)
+                                const { error } = await supabase.from('players').update({ password: pass }).eq('id', user.id)
                                 if (error) alert('Error: ' + error.message)
                                 else {
                                     alert('Contraseña actualizada')
@@ -135,7 +166,7 @@ export default function Profile() {
                 </div>
             </section>
 
-            {/* Match History Small List */}
+            {/* Match History */}
             <section>
                 <h3 className="text-lg font-bold mb-4 uppercase flex items-center gap-2">
                     <Award className="text-accent-green" size={20} /> Historial de Partidos
@@ -147,8 +178,11 @@ export default function Profile() {
                         stats.map(s => (
                             <div key={s.id} className="soccer-card !p-3 border-white/5 bg-black/20 flex justify-between items-center">
                                 <div>
-                                    <p className="text-xs text-gray-400">{new Date(s.matches.match_date).toLocaleDateString()}</p>
+                                    <p className="text-[10px] text-gray-400">{new Date(s.matches.match_date).toLocaleDateString()}</p>
                                     <p className="font-bold">vs {s.matches.rival}</p>
+                                    {s.matches?.tournaments?.name && (
+                                        <p className="text-[10px] text-accent-green/60">{s.matches.tournaments.name}</p>
+                                    )}
                                 </div>
                                 <div className="text-right">
                                     <p className="text-sm text-accent-green font-bold">{s.goals}G / {s.assists}A</p>

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getPlayers } from '@/lib/db'
-import { Save, ChevronLeft, Plus, Minus } from 'lucide-react'
+import { Save, ChevronLeft, Plus, Trophy } from 'lucide-react'
 
 export default function NewMatch() {
     const [loading, setLoading] = useState(true)
@@ -16,22 +16,24 @@ export default function NewMatch() {
     const [playerStats, setPlayerStats] = useState<any>({})
     const [currentUser, setCurrentUser] = useState<any>(null)
     const [teamName, setTeamName] = useState('UT')
-    const [matchDuration, setMatchDuration] = useState(350) // Total team limit
-    const [individualLimit, setIndividualLimit] = useState(50) // Player limit
+    const [matchDuration, setMatchDuration] = useState(350)
+    const [individualLimit, setIndividualLimit] = useState(50)
+
+    // Tournament state
+    const [tournaments, setTournaments] = useState<any[]>([])
+    const [selectedTournamentId, setSelectedTournamentId] = useState<string>('') // existing
+    const [newTournamentName, setNewTournamentName] = useState('')
+    const [isCurrent, setIsCurrent] = useState(false)
+    const [isNewTournament, setIsNewTournament] = useState(false)
+
     const router = useRouter()
 
     useEffect(() => {
         async function init() {
             const userStr = localStorage.getItem('user')
-            if (!userStr) {
-                router.push('/login')
-                return
-            }
+            if (!userStr) { router.push('/login'); return }
             const user = JSON.parse(userStr)
-            if (user.role !== 'admin') {
-                router.push('/')
-                return
-            }
+            if (user.role !== 'admin') { router.push('/'); return }
             setCurrentUser(user)
 
             const { data } = await getPlayers(user.team_id)
@@ -39,38 +41,46 @@ export default function NewMatch() {
                 setPlayers(data)
                 const initialStats = {} as any
                 data.forEach((p: any) => {
-                    initialStats[p.id] = {
-                        played: false,
-                        minutes: 0,
-                        goals: 0,
-                        assists: 0,
-                        yellow_cards: 0,
-                        red_card: false
-                    }
+                    initialStats[p.id] = { played: false, minutes: 0, goals: 0, assists: 0, yellow_cards: 0, red_card: false }
                 })
                 setPlayerStats(initialStats)
-                
-                // Fetch team settings
-                const { data: teamData } = await supabase
-                    .from('teams')
-                    .select('name, match_duration')
-                    .eq('id', user.team_id)
-                    .single()
-                
-                if (teamData) {
-                    setTeamName(teamData.name)
-                    if (teamData.match_duration) {
-                        const baseVal = teamData.match_duration
-                        // If it's a small value (legacy/new 50), it is the individual limit
-                        // If it's a large value (legacy 350), we deduce individual limit (350/7=50)
-                        const playerLimit = baseVal <= 100 ? baseVal : Math.floor(baseVal / 7)
-                        const teamLimit = baseVal <= 100 ? baseVal * 7 : baseVal
-                        
-                        setIndividualLimit(playerLimit)
-                        setMatchDuration(teamLimit)
-                    }
+            }
+
+            // Fetch team settings
+            const { data: teamData } = await supabase.from('teams').select('name, match_duration').eq('id', user.team_id).single()
+            if (teamData) {
+                setTeamName(teamData.name)
+                if (teamData.match_duration) {
+                    const baseVal = teamData.match_duration
+                    const playerLimit = baseVal <= 100 ? baseVal : Math.floor(baseVal / 7)
+                    const teamLimit = baseVal <= 100 ? baseVal * 7 : baseVal
+                    setIndividualLimit(playerLimit)
+                    setMatchDuration(teamLimit)
                 }
             }
+
+            // Fetch tournaments
+            const { data: tData } = await supabase
+                .from('tournaments')
+                .select('*')
+                .eq('team_id', user.team_id)
+                .order('created_at', { ascending: false })
+            
+            if (tData && tData.length > 0) {
+                setTournaments(tData)
+                const current = tData.find((t: any) => t.is_current)
+                if (current) {
+                    setSelectedTournamentId(current.id)
+                    setIsCurrent(true)
+                } else {
+                    setSelectedTournamentId(tData[0].id)
+                }
+            } else {
+                // No tournaments yet, force new tournament creation
+                setIsNewTournament(true)
+                setIsCurrent(true)
+            }
+
             setLoading(false)
         }
         init()
@@ -86,33 +96,49 @@ export default function NewMatch() {
         }
         setPlayerStats((prev: any) => ({
             ...prev,
-            [playerId]: {
-                ...prev[playerId],
-                [stat]: value
-            }
+            [playerId]: { ...prev[playerId], [stat]: value }
         }))
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        // Validation: Total minutes <= matchDuration
         const totalMinutes = Object.values(playerStats).reduce((acc: number, stat: any) => acc + (stat.minutes || 0), 0)
         if (totalMinutes > matchDuration) {
             alert(`El total de minutos (${totalMinutes}) no puede superar los ${matchDuration} minutos configurados para el equipo.`)
             return
         }
 
+        if (isNewTournament && !newTournamentName.trim()) {
+            alert('Por favor, ingresa el nombre del torneo.')
+            return
+        }
+
         setLoading(true)
 
-        // 1. Create Match
+        let tournamentId = selectedTournamentId
+
+        // Handle tournament creation or current flag update
+        if (isNewTournament) {
+            // If marking as current, un-mark all others first
+            if (isCurrent) {
+                await supabase.from('tournaments').update({ is_current: false }).eq('team_id', currentUser.team_id)
+            }
+            const { data: newT } = await supabase.from('tournaments')
+                .insert([{ name: newTournamentName.trim(), team_id: currentUser.team_id, is_current: isCurrent }])
+                .select().single()
+            if (newT) tournamentId = newT.id
+        } else if (isCurrent) {
+            // Update current flag
+            await supabase.from('tournaments').update({ is_current: false }).eq('team_id', currentUser.team_id)
+            await supabase.from('tournaments').update({ is_current: true }).eq('id', tournamentId)
+        }
+
+        // Create Match
         const { data: matchData, error: matchError } = await supabase
             .from('matches')
-            .insert([
-                { match_date: date, rival, goals_own: goalsOwn, goals_rival: goalsRival, team_id: currentUser?.team_id }
-            ])
-            .select()
-            .single()
+            .insert([{ match_date: date, rival, goals_own: goalsOwn, goals_rival: goalsRival, team_id: currentUser?.team_id, tournament_id: tournamentId || null }])
+            .select().single()
 
         if (matchError) {
             alert('Error al crear partido: ' + matchError.message)
@@ -120,16 +146,12 @@ export default function NewMatch() {
             return
         }
 
-        // 2. Insert Player Stats
+        // Insert Player Stats
         const statsToInsert = Object.entries(playerStats).map(([playerId, stats]: [string, any]) => ({
-            match_id: matchData.id,
-            player_id: playerId,
-            ...stats
+            match_id: matchData.id, player_id: playerId, ...stats
         }))
 
-        const { error: statsError } = await supabase
-            .from('match_stats')
-            .insert(statsToInsert)
+        const { error: statsError } = await supabase.from('match_stats').insert(statsToInsert)
 
         if (statsError) {
             alert('Error al guardar estadísticas: ' + statsError.message)
@@ -151,6 +173,57 @@ export default function NewMatch() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Tournament Selector */}
+                <div className="soccer-card border-white/10 bg-black/40 space-y-3">
+                    <h3 className="font-bold uppercase flex items-center gap-2 text-accent-green text-sm">
+                        <Trophy size={16} /> Campeonato / Torneo
+                    </h3>
+
+                    {/* Toggle new vs existing */}
+                    {tournaments.length > 0 && (
+                        <div className="flex gap-2">
+                            <button type="button" onClick={() => setIsNewTournament(false)}
+                                className={`text-xs px-3 py-1.5 rounded-lg font-bold uppercase transition-all ${!isNewTournament ? 'bg-accent-green text-black' : 'bg-white/10 text-gray-400 hover:bg-white/20'}`}>
+                                Seleccionar existente
+                            </button>
+                            <button type="button" onClick={() => setIsNewTournament(true)}
+                                className={`text-xs px-3 py-1.5 rounded-lg font-bold uppercase transition-all ${isNewTournament ? 'bg-accent-green text-black' : 'bg-white/10 text-gray-400 hover:bg-white/20'}`}>
+                                + Nuevo torneo
+                            </button>
+                        </div>
+                    )}
+
+                    {isNewTournament ? (
+                        <input
+                            type="text"
+                            placeholder="Ej: Clausura 2025"
+                            className="w-full bg-black/20 border border-white/10 rounded p-2 focus:border-accent-green outline-none text-sm"
+                            value={newTournamentName}
+                            onChange={(e) => setNewTournamentName(e.target.value)}
+                        />
+                    ) : (
+                        <select
+                            className="w-full bg-black/20 border border-white/10 rounded p-2 focus:border-accent-green outline-none text-sm"
+                            value={selectedTournamentId}
+                            onChange={(e) => setSelectedTournamentId(e.target.value)}
+                        >
+                            {tournaments.map((t: any) => (
+                                <option key={t.id} value={t.id}>{t.name}{t.is_current ? ' ★' : ''}</option>
+                            ))}
+                        </select>
+                    )}
+
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            className="accent-accent-green w-4 h-4"
+                            checked={isCurrent}
+                            onChange={(e) => setIsCurrent(e.target.checked)}
+                        />
+                        <span className="text-xs text-gray-300 font-bold uppercase">Marcar como Torneo Actual</span>
+                    </label>
+                </div>
+
                 {/* Match General Info */}
                 <div className="soccer-card grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
