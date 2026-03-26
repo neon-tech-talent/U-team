@@ -59,7 +59,12 @@ export default function NewMatch() {
                 if (teamData) {
                     setTeamName(teamData.name)
                     if (teamData.match_duration) {
-                        setMatchDuration(teamData.match_duration)
+                        // Si es un valor pequeño (e.g. 50), lo multiplicamos por 7 titulares
+                        // Si ya es un valor grande (legacy 350), lo dejamos como está para compatibilidad
+                        const limit = teamData.match_duration <= 100 
+                            ? teamData.match_duration * 7 
+                            : teamData.match_duration
+                        setMatchDuration(limit)
                     }
                 }
             }
