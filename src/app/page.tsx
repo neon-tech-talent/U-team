@@ -198,7 +198,7 @@ export default function Dashboard() {
           </h3>
           {tournaments.length > 0 && (
             <select
-              className="bg-black/40 border border-white/10 rounded-lg px-2 py-1 text-xs font-bold focus:outline-none focus:border-accent-green"
+              className="bg-[#121413] border border-white/10 rounded-lg px-2 py-1 text-xs font-bold focus:outline-none focus:border-accent-green"
               value={selectedTournament}
               onChange={(e) => setSelectedTournament(e.target.value)}
             >

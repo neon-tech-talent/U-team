@@ -24,6 +24,7 @@ export default function LineupGenerator() {
     const [players, setPlayers] = useState<Player[]>([])
     const [selectedIds, setSelectedIds] = useState<string[]>([])
     const [formation, setFormation] = useState<FormationKey>('2-3-1')
+    const [footballType, setFootballType] = useState(7)
     const [teamName, setTeamName] = useState('Ultimate Team')
     const [teamSettings, setTeamSettings] = useState({ shirt_style: 'solid', primary_color: '#ffffff', secondary_color: '#000000' })
     const [loading, setLoading] = useState(true)
@@ -40,9 +41,17 @@ export default function LineupGenerator() {
             const user = JSON.parse(userStr)
 
             if (user.team_id) {
-                const { data: tData } = await supabase.from('teams').select('name, shirt_style, primary_color, secondary_color').eq('id', user.team_id).single()
+                const { data: tData } = await supabase.from('teams').select('name, shirt_style, primary_color, secondary_color, football_type').eq('id', user.team_id).single()
                 if (tData) {
                     setTeamName(tData.name)
+                    const fType = tData.football_type || 7
+                    setFootballType(fType)
+                    
+                    // Set default formation based on football type
+                    if (fType === 9) setFormation('3-3-2')
+                    else if (fType === 11) setFormation('4-4-2')
+                    else setFormation('2-3-1')
+
                     setTeamSettings({
                         shirt_style: tData.shirt_style || 'solid',
                         primary_color: tData.primary_color || '#7b8c94',
@@ -76,8 +85,8 @@ export default function LineupGenerator() {
 
     if (loading) return <div className="p-8 text-center uppercase font-bold tracking-widest text-accent-green">Cargando plantel...</div>
 
-    const starters = selectedIds.slice(0, 7)
-    const subs = selectedIds.slice(7)
+    const starters = selectedIds.slice(0, footballType)
+    const subs = selectedIds.slice(footballType)
     const formationCoords = FORMATIONS[formation]
 
     return (
@@ -104,18 +113,25 @@ export default function LineupGenerator() {
                     <section className="soccer-card border-white/10 bg-black/40">
                         <h3 className="text-xs font-black uppercase text-gray-400 mb-4 tracking-widest">Táctica</h3>
                         <div className="grid grid-cols-2 gap-2">
-                            {(Object.keys(FORMATIONS) as FormationKey[]).map(f => (
-                                <button
-                                    key={f}
-                                    onClick={() => setFormation(f)}
-                                    className={`py-2 px-4 rounded border font-black text-xs uppercase transition-all ${formation === f
-                                        ? 'bg-accent-green border-accent-green text-black'
-                                        : 'bg-black/40 border-white/10 text-gray-400 hover:border-white/30'
-                                        }`}
-                                >
-                                    {f}
-                                </button>
-                            ))}
+                            {(Object.keys(FORMATIONS) as FormationKey[]).map(f => {
+                                // Simple check to show only relevant formations if possible, 
+                                // but we'll show all and then let the user choose (some might be compatible)
+                                const playerCount = FORMATIONS[f].length
+                                if (playerCount !== footballType) return null
+                                
+                                return (
+                                    <button
+                                        key={f}
+                                        onClick={() => setFormation(f)}
+                                        className={`py-2 px-4 rounded border font-black text-xs uppercase transition-all ${formation === f
+                                            ? 'bg-accent-green border-accent-green text-black'
+                                            : 'bg-black/40 border-white/10 text-gray-400 hover:border-white/30'
+                                            }`}
+                                    >
+                                        {f}
+                                    </button>
+                                )
+                            })}
                         </div>
                     </section>
 
@@ -145,7 +161,7 @@ export default function LineupGenerator() {
                                         </div>
                                         {isSelected && (
                                             <span className="text-[10px] font-black bg-white/10 px-2 py-1 rounded">
-                                                {index === 0 ? 'GK' : index < 7 ? 'TIT' : 'SUP'}
+                                                {index === 0 ? 'GK' : index < footballType ? 'TIT' : 'SUP'}
                                             </span>
                                         )}
                                     </button>

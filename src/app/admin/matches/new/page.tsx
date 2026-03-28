@@ -47,13 +47,16 @@ export default function NewMatch() {
             }
 
             // Fetch team settings
-            const { data: teamData } = await supabase.from('teams').select('name, match_duration').eq('id', user.team_id).single()
+            const { data: teamData } = await supabase.from('teams').select('name, match_duration, football_type').eq('id', user.team_id).single()
             if (teamData) {
                 setTeamName(teamData.name)
+                const fType = teamData.football_type || 7
                 if (teamData.match_duration) {
                     const baseVal = teamData.match_duration
-                    const playerLimit = baseVal <= 100 ? baseVal : Math.floor(baseVal / 7)
-                    const teamLimit = baseVal <= 100 ? baseVal * 7 : baseVal
+                    // Si baseVal es <= 100, es la duración de UN tiempo o el partido total (ej: 50 min)
+                    // Si baseVal es > 100, es el total de minutos ya calculado (antigua lógica)
+                    const playerLimit = baseVal <= 100 ? baseVal : Math.floor(baseVal / fType)
+                    const teamLimit = baseVal <= 100 ? baseVal * fType : baseVal
                     setIndividualLimit(playerLimit)
                     setMatchDuration(teamLimit)
                 }
@@ -203,7 +206,7 @@ export default function NewMatch() {
                         />
                     ) : (
                         <select
-                            className="w-full bg-black/20 border border-white/10 rounded p-2 focus:border-accent-green outline-none text-sm"
+                            className="w-full bg-[#121415] border border-white/10 rounded p-2 focus:border-accent-green outline-none text-sm text-white"
                             value={selectedTournamentId}
                             onChange={(e) => setSelectedTournamentId(e.target.value)}
                         >
@@ -328,7 +331,7 @@ export default function NewMatch() {
                                         <div className="text-center">
                                             <p className="text-[7px] md:text-[8px] text-gray-400 uppercase mb-1">Amar.</p>
                                             <select
-                                                className="w-full bg-black/40 text-center rounded text-xs py-1.5 appearance-none"
+                                                className="w-full bg-[#121415] text-center rounded text-xs py-1.5 appearance-none text-white"
                                                 value={playerStats[player.id]?.yellow_cards}
                                                 onChange={(e) => handleStatChange(player.id, 'yellow_cards', parseInt(e.target.value))}
                                             >

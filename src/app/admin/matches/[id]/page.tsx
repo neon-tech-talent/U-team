@@ -14,6 +14,8 @@ export default function EditMatch({ params }: { params: Promise<{ id: string }> 
     const [rival, setRival] = useState('')
     const [goalsOwn, setGoalsOwn] = useState(0)
     const [goalsRival, setGoalsRival] = useState(0)
+    const [matchDuration, setMatchDuration] = useState(350)
+    const [individualLimit, setIndividualLimit] = useState(50)
     const [playerStats, setPlayerStats] = useState<any>({})
     const router = useRouter()
 
@@ -37,6 +39,19 @@ export default function EditMatch({ params }: { params: Promise<{ id: string }> 
                 setRival(match.rival)
                 setGoalsOwn(match.goals_own)
                 setGoalsRival(match.goals_rival)
+            }
+            
+            // Fetch team settings
+            const { data: teamData } = await supabase.from('teams').select('match_duration, football_type').eq('id', user.team_id).single()
+            if (teamData) {
+                const fType = teamData.football_type || 7
+                if (teamData.match_duration) {
+                    const baseVal = teamData.match_duration
+                    const playerLimit = baseVal <= 100 ? baseVal : Math.floor(baseVal / fType)
+                    const teamLimit = baseVal <= 100 ? baseVal * fType : baseVal
+                    setIndividualLimit(playerLimit)
+                    setMatchDuration(teamLimit)
+                }
             }
 
             // Fetch Players and existing stats
@@ -65,6 +80,13 @@ export default function EditMatch({ params }: { params: Promise<{ id: string }> 
     }, [id, router])
 
     const handleStatChange = (playerId: string, stat: string, value: any) => {
+        if (stat === 'minutes') {
+            const mins = parseInt(value) || 0
+            if (mins > individualLimit) {
+                alert(`Un jugador no puede jugar más de ${individualLimit} minutos (duración del partido).`)
+                return
+            }
+        }
         setPlayerStats((prev: any) => ({
             ...prev,
             [playerId]: {
@@ -77,10 +99,10 @@ export default function EditMatch({ params }: { params: Promise<{ id: string }> 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        // Validation: Total minutes <= 350
+        // Validation: Total minutes <= matchDuration
         const totalMinutes = Object.values(playerStats).reduce((acc: number, stat: any) => acc + (stat.minutes || 0), 0)
-        if (totalMinutes > 350) {
-            alert(`El total de minutos (${totalMinutes}) no puede superar los 350 minutos.`)
+        if (totalMinutes > matchDuration) {
+            alert(`El total de minutos (${totalMinutes}) no puede superar los ${matchDuration} minutos.`)
             return
         }
 
@@ -176,11 +198,11 @@ export default function EditMatch({ params }: { params: Promise<{ id: string }> 
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         <h3 className="font-bold uppercase text-accent-green text-sm">Estadísticas de Jugadores</h3>
-                        <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${Object.values(playerStats).reduce((acc: number, s: any) => acc + (s.minutes || 0), 0) > 350
+                        <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${Object.values(playerStats).reduce((acc: number, s: any) => acc + (s.minutes || 0), 0) > matchDuration
                             ? 'bg-danger-red text-white animate-pulse'
                             : 'bg-white/10 text-gray-400'
                             }`}>
-                            Total: {Object.values(playerStats).reduce((acc: number, s: any) => acc + (s.minutes || 0), 0)} / 350 Min
+                            Total: {Object.values(playerStats).reduce((acc: number, s: any) => acc + (s.minutes || 0), 0)} / {matchDuration} Min
                         </div>
                     </div>
                     <div className="space-y-2">
@@ -230,7 +252,7 @@ export default function EditMatch({ params }: { params: Promise<{ id: string }> 
                                         <div className="text-center">
                                             <p className="text-[8px] text-gray-400 uppercase">Amarillas</p>
                                             <select
-                                                className="w-full bg-black/40 text-center rounded text-xs py-1"
+                                                className="w-full bg-[#121415] text-center rounded text-xs py-1 text-white"
                                                 value={playerStats[player.id]?.yellow_cards}
                                                 onChange={(e) => handleStatChange(player.id, 'yellow_cards', parseInt(e.target.value))}
                                             >

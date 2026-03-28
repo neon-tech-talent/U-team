@@ -3,6 +3,13 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { JerseyIcon } from '@/components/JerseyIcon'
+
+const FOOTBALL_TYPES = [
+    { id: 7, name: 'Fútbol 7' },
+    { id: 9, name: 'Fútbol 9' },
+    { id: 11, name: 'Fútbol 11' },
+]
 
 const SHIRT_MODELS = [
     { id: 'solid', name: 'LISA' },
@@ -36,7 +43,6 @@ const TEAM_COLORS = [
     '#db2777'  // Pink
 ]
 
-import { JerseyIcon } from '@/components/JerseyIcon'
 
 export default function SetupTeamPage() {
     const [teamName, setTeamName] = useState('')
@@ -45,6 +51,7 @@ export default function SetupTeamPage() {
     const [secondaryColor, setSecondaryColor] = useState(TEAM_COLORS[3]) // Navy
     const [activeColorSelector, setActiveColorSelector] = useState<'primary' | 'secondary'>('primary')
     const [matchDuration, setMatchDuration] = useState(50)
+    const [footballType, setFootballType] = useState(7)
     
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -87,7 +94,8 @@ export default function SetupTeamPage() {
                 shirt_style: shirtStyle,
                 primary_color: primaryColor,
                 secondary_color: finalSecondaryColor,
-                match_duration: matchDuration
+                match_duration: matchDuration,
+                football_type: footballType
             }])
             .select()
             .single()
@@ -154,6 +162,22 @@ export default function SetupTeamPage() {
                         />
                     </div>
 
+                    <div>
+                        <label className="block text-[10px] font-black mb-2 uppercase tracking-[0.2em] text-[#8ba19e]">Tipo de Fútbol</label>
+                        <select
+                            className="w-full px-4 py-3 bg-[#121415] border border-white/10 rounded-xl focus:outline-none focus:border-accent-green text-sm font-bold text-white transition-colors"
+                            value={footballType}
+                            onChange={(e) => setFootballType(parseInt(e.target.value))}
+                            required
+                        >
+                            {FOOTBALL_TYPES.map(type => (
+                                <option key={type.id} value={type.id} className="bg-[#121413]">
+                                    {type.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
                     <div className="pt-2">
                         <label className="block text-[10px] font-black mb-2 uppercase tracking-[0.2em] text-[#8ba19e]">Duración total del partido (sumando los dos tiempos)</label>
                         <input
@@ -164,7 +188,7 @@ export default function SetupTeamPage() {
                             placeholder="50"
                             required
                         />
-                        <p className="text-[10px] text-gray-500 mt-1 italic">El valor total se calculará multiplicando esto por los 7 titulares (ej: 50 min x 7 = 350 min).</p>
+                        <p className="text-[10px] text-gray-500 mt-1 italic">El valor total se calculará multiplicando esto por los {footballType} titulares (ej: {matchDuration} min x {footballType} = {matchDuration * footballType} min).</p>
                     </div>
 
                     <div className="pt-4 border-t border-white/5">

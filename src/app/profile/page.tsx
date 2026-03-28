@@ -88,7 +88,7 @@ export default function Profile() {
                 <div className="soccer-card !p-3 border-white/10 bg-black/40 flex items-center gap-3">
                     <Trophy size={16} className="text-accent-green shrink-0" />
                     <select
-                        className="flex-1 bg-transparent text-sm font-bold focus:outline-none"
+                        className="flex-1 bg-[#121415] text-sm font-bold focus:outline-none text-white"
                         value={selectedTournament}
                         onChange={(e) => setSelectedTournament(e.target.value)}
                     >

@@ -21,7 +21,7 @@ export default function LoginPage() {
         const { data, error: dbError } = await supabase
             .from('players')
             .select('*')
-            .eq('username', username)
+            .ilike('username', username)
             .single()
 
         if (dbError || !data) {
@@ -81,10 +81,12 @@ export default function LoginPage() {
             } else {
                 router.push('/')
             }
+            // No cambiamos setLoading a false para que se mantenga en "Entrando..." mientras carga la página
+            return
         } else {
             setError('Contraseña incorrecta')
+            setLoading(false)
         }
-        setLoading(false)
     }
 
     return (
