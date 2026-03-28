@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { LogOut, UserPlus, Shield, Pause, Play, Trash2 } from 'lucide-react'
+import { LogOut, UserPlus, Shield, Pause, Play, Trash2, Search, Key } from 'lucide-react'
 
 export default function SuperadminDashboard() {
     const [admins, setAdmins] = useState<any[]>([])
@@ -12,6 +12,7 @@ export default function SuperadminDashboard() {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [phone, setPhone] = useState('')
+    const [searchTerm, setSearchTerm] = useState('')
     const [message, setMessage] = useState({ text: '', type: '' })
     const router = useRouter()
 
@@ -101,6 +102,22 @@ export default function SuperadminDashboard() {
         }
     }
 
+    const handleResetPassword = async (id: string, adminUsername: string) => {
+        const newPassword = window.prompt(`Ingresa la nueva contraseña para el administrador @${adminUsername}:`)
+        if (!newPassword || newPassword.trim() === '') return // Canceló o dejó vacío
+
+        const { error } = await supabase
+            .from('players')
+            .update({ password: newPassword.trim() })
+            .eq('id', id)
+        
+        if (error) {
+            alert('Error al restablecer contraseña: ' + error.message)
+        } else {
+            alert(`¡Contraseña actualizada exitosamente para @${adminUsername}!`)
+        }
+    }
+
     const handleDeleteAdmin = async (id: string, adminName: string) => {
         if (!confirm(`¿Estás seguro de que deseas eliminar al administrador "${adminName}"? Esta acción no se puede deshacer.`)) return
 
@@ -120,6 +137,11 @@ export default function SuperadminDashboard() {
         localStorage.removeItem('user')
         router.push('/login')
     }
+
+    const filteredAdmins = admins.filter(admin => 
+        admin.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        admin.username?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
 
     if (loading) return <div className="p-8 text-center uppercase font-bold text-accent-green tracking-widest">Cargando...</div>
 
@@ -208,16 +230,31 @@ export default function SuperadminDashboard() {
                 </div>
 
                 {/* Lista de Administradores */}
-                <div className="soccer-card border-white/10">
-                    <h3 className="font-bold uppercase tracking-widest text-sm mb-6 border-b border-white/10 pb-4 text-gray-400">
-                        Administradores Activos
-                    </h3>
+                <div className="soccer-card border-white/10 flex flex-col h-full">
+                    <div className="flex flex-wrap items-center justify-between gap-4 mb-6 border-b border-white/10 pb-4">
+                        <h3 className="font-bold uppercase tracking-widest text-sm text-gray-400">
+                            Administradores Activos
+                        </h3>
+                        {/* Buscador */}
+                        <div className="relative flex-1 min-w-[200px] max-w-sm">
+                            <input
+                                type="text"
+                                placeholder="Buscar admin..."
+                                className="w-full bg-black/40 border border-white/10 rounded-full py-2 pl-9 pr-4 text-xs focus:border-accent-green outline-none focus:ring-1 focus:ring-accent-green/50 transition-all font-bold tracking-widest uppercase text-white placeholder:text-gray-600"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                        </div>
+                    </div>
                     
-                    <div className="space-y-3">
-                        {admins.length === 0 ? (
-                            <p className="text-gray-500 text-xs uppercase font-bold tracking-widest text-center py-8">No hay administradores</p>
+                    <div className="space-y-3 overflow-y-auto max-h-[600px] pr-2 custom-scrollbar">
+                        {filteredAdmins.length === 0 ? (
+                            <p className="text-gray-500 text-xs uppercase font-bold tracking-widest text-center py-8">
+                                {admins.length === 0 ? "No hay administradores" : "No se encontraron resultados"}
+                            </p>
                         ) : (
-                            admins.map(admin => {
+                            filteredAdmins.map(admin => {
                                 const isExpired = admin.subscription_until && new Date(admin.subscription_until) < new Date();
                                 
                                 return (
@@ -237,6 +274,13 @@ export default function SuperadminDashboard() {
                                             {admin.phone && <p className="text-[10px] text-gray-400 mt-1 font-mono">📱 {admin.phone}</p>}
                                         </div>
                                         <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => handleResetPassword(admin.id, admin.username)}
+                                                className="p-2 bg-black/40 text-gray-400 hover:text-accent-green hover:bg-accent-green/10 rounded-lg transition-all"
+                                                title="Restablecer Contraseña"
+                                            >
+                                                <Key size={14} />
+                                            </button>
                                             <button
                                                 onClick={() => handleToggleActive(admin.id, admin.is_active !== false)}
                                                 className={`p-2 rounded-lg transition-colors ${admin.is_active === false ? 'bg-accent-green text-black hover:brightness-110' : 'bg-black/40 text-gray-400 hover:text-white'}`}
