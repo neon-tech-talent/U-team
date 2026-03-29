@@ -37,17 +37,19 @@ export default function ClientHeader() {
 
   if (!teamName) {
     return (
-      <header className="pitch-header flex flex-col items-center gap-3">
-        <h1 className="text-2xl md:text-4xl font-black italic tracking-tighter uppercase">
-          Ultimate <span className="text-accent-green">Team</span>
+      <header className="w-full py-5 md:py-6 flex flex-col items-center justify-center border-b-[3px] md:border-b-4 border-black/80 shadow-[0_10px_20px_rgba(0,0,0,0.5)] z-20"
+              style={{ backgroundImage: 'repeating-linear-gradient(45deg, #0f0f0f 0, #0f0f0f 4px, #1a1a1a 4px, #1a1a1a 8px)' }}>
+        <h1 className="text-2xl sm:text-3xl md:text-5xl font-black italic text-white uppercase tracking-tighter drop-shadow-lg flex items-center justify-center gap-2 flex-wrap text-center px-4">
+          ULTIMATE <span className="text-accent-green">TEAM</span>
         </h1>
       </header>
     )
   }
 
   return (
-    <header className="pitch-header flex flex-col items-center gap-3">
-      <h1 className="text-2xl md:text-4xl font-black italic tracking-tighter uppercase text-white">
+    <header className="w-full py-5 md:py-6 flex flex-col items-center justify-center border-b-[3px] md:border-b-4 border-black/80 shadow-[0_10px_20px_rgba(0,0,0,0.5)] z-20"
+            style={{ backgroundImage: 'repeating-linear-gradient(45deg, #0f0f0f 0, #0f0f0f 4px, #1a1a1a 4px, #1a1a1a 8px)' }}>
+      <h1 className="text-2xl sm:text-3xl md:text-5xl font-black italic tracking-tighter uppercase text-white drop-shadow-lg text-center px-4 break-words max-w-full">
         {teamName}
       </h1>
     </header>
