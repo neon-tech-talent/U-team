@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { JerseyIcon } from '@/components/JerseyIcon'
 
 const FOOTBALL_TYPES = [
+    { id: 5, name: 'Fútbol 5' },
     { id: 7, name: 'Fútbol 7' },
     { id: 9, name: 'Fútbol 9' },
     { id: 11, name: 'Fútbol 11' },

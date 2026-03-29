@@ -48,7 +48,8 @@ export default function LineupGenerator() {
                     setFootballType(fType)
                     
                     // Set default formation based on football type
-                    if (fType === 9) setFormation('3-3-2')
+                    if (fType === 5) setFormation('2-2')
+                    else if (fType === 9) setFormation('3-3-2')
                     else if (fType === 11) setFormation('4-4-2')
                     else setFormation('2-3-1')
 

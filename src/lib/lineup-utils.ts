@@ -1,4 +1,19 @@
 export const FORMATIONS = {
+    // Fútbol 5
+    '2-2': [
+        { top: '85%', left: '50%' }, // GK
+        { top: '65%', left: '30%' }, // DF
+        { top: '65%', left: '70%' }, // DF
+        { top: '30%', left: '30%' }, // FW
+        { top: '30%', left: '70%' }, // FW
+    ],
+    '2-1-1': [
+        { top: '85%', left: '50%' }, // GK
+        { top: '65%', left: '30%' }, // DF
+        { top: '65%', left: '70%' }, // DF
+        { top: '45%', left: '50%' }, // MF
+        { top: '20%', left: '50%' }, // FW
+    ],
     // Fútbol 7
     '2-3-1': [
         { top: '85%', left: '50%' }, // GK

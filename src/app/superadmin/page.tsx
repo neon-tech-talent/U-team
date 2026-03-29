@@ -5,6 +5,76 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { LogOut, UserPlus, Shield, Pause, Play, Trash2, Search, Key } from 'lucide-react'
 
+const SubscriptionDateSelector = ({ 
+    subscriptionUntil, 
+    adminId, 
+    onUpdate 
+}: { 
+    subscriptionUntil: string | null, 
+    adminId: string, 
+    onUpdate: (id: string, newDate: string | null) => void 
+}) => {
+    const days = Array.from({length: 31}, (_, i) => (i + 1).toString())
+    const months = Array.from({length: 12}, (_, i) => (i + 1).toString())
+    const years = ['2026', '2027', '2028', '2029', '2030']
+
+    const dateStr = subscriptionUntil ? subscriptionUntil.substring(0,10) : ''
+    const [cYear, cMonth, cDay] = dateStr ? dateStr.split('-') : ['', '', '']
+
+    const handleDateChange = (type: string, val: string) => {
+        let y = cYear || '2026'
+        let m = cMonth || '01'
+        let d = cDay || '01'
+
+        if (type === 'year') y = val
+        else if (type === 'month') m = val.padStart(2, '0')
+        else if (type === 'day') d = val.padStart(2, '0')
+
+        onUpdate(adminId, `${y}-${m}-${d}`)
+    }
+
+    return (
+        <div className="flex items-center gap-1 mt-1">
+            <select 
+                className="bg-black/40 border border-white/10 rounded px-1.5 py-1 text-xs text-white outline-none focus:border-accent-green cursor-pointer"
+                value={cDay ? parseInt(cDay, 10).toString() : ''}
+                onChange={(e) => handleDateChange('day', e.target.value)}
+            >
+                <option value="" disabled>Día</option>
+                {days.map(d => <option key={`d-${d}`} value={d}>{d}</option>)}
+            </select>
+            
+            <select 
+                className="bg-black/40 border border-white/10 rounded p-1 text-xs text-white outline-none focus:border-accent-green cursor-pointer"
+                value={cMonth ? parseInt(cMonth, 10).toString() : ''}
+                onChange={(e) => handleDateChange('month', e.target.value)}
+            >
+                <option value="" disabled>Mes</option>
+                {months.map(m => <option key={`m-${m}`} value={m}>{m}</option>)}
+            </select>
+            
+            <select 
+                className="bg-black/40 border border-white/10 rounded p-1 text-xs text-white outline-none focus:border-accent-green cursor-pointer"
+                value={cYear}
+                onChange={(e) => handleDateChange('year', e.target.value)}
+            >
+                <option value="" disabled>Año</option>
+                {years.map(y => <option key={`y-${y}`} value={y}>{y}</option>)}
+            </select>
+
+            {dateStr && (
+                <button 
+                    onClick={() => onUpdate(adminId, null)}
+                    className="ml-1 p-1 text-danger-red hover:bg-danger-red/20 rounded transition-colors"
+                    title="Borrar fecha"
+                >
+                    <Trash2 size={12} />
+                </button>
+            )}
+        </div>
+    )
+}
+
 export default function SuperadminDashboard() {
     const [admins, setAdmins] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
@@ -89,7 +159,7 @@ export default function SuperadminDashboard() {
         }
     }
 
-    const handleUpdateSubscription = async (id: string, newDate: string) => {
+    const handleUpdateSubscription = async (id: string, newDate: string | null) => {
         const { error } = await supabase
             .from('players')
             .update({ subscription_until: newDate || null })
@@ -299,20 +369,19 @@ export default function SuperadminDashboard() {
                                     </div>
                                     
                                     {/* Panel de Suscripción */}
-                                    <div className="mt-1 pt-3 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                    <div className="mt-1 pt-3 border-t border-white/5 flex flex-col gap-3">
                                         <div className="flex flex-col">
-                                            <p className="text-[10px] uppercase text-gray-500 font-bold tracking-widest mb-1">Pago Hasta</p>
-                                            <input 
-                                                type="date" 
-                                                className="bg-transparent text-xs text-white outline-none focus:border-b focus:border-accent-green cursor-pointer"
-                                                value={admin.subscription_until ? admin.subscription_until.substring(0,10) : ''}
-                                                onChange={(e) => handleUpdateSubscription(admin.id, e.target.value)}
+                                            <p className="text-[10px] uppercase text-gray-500 font-bold tracking-widest">Pago Hasta</p>
+                                            <SubscriptionDateSelector 
+                                                subscriptionUntil={admin.subscription_until} 
+                                                adminId={admin.id} 
+                                                onUpdate={handleUpdateSubscription} 
                                             />
                                         </div>
                                         {isExpired && (
-                                            <div className="flex-1 bg-danger-red/10 border border-danger-red/20 rounded p-2 text-center">
-                                                <p className="text-[10px] text-danger-red font-black uppercase tracking-tighter">
-                                                    ⚠️ Al administrador {admin.username} se le venció el servicio
+                                            <div className="w-full bg-danger-red/10 border border-danger-red/20 rounded py-2 text-center">
+                                                <p className="text-[10px] text-danger-red font-black uppercase tracking-widest">
+                                                    ⚠️ Licencia Vencida
                                                 </p>
                                             </div>
                                         )}

@@ -18,6 +18,8 @@ export default function NewMatch() {
     const [teamName, setTeamName] = useState('UT')
     const [matchDuration, setMatchDuration] = useState(350)
     const [individualLimit, setIndividualLimit] = useState(50)
+    const [pastRivals, setPastRivals] = useState<string[]>([])
+    const [showSuggestions, setShowSuggestions] = useState(false)
 
     // Tournament state
     const [tournaments, setTournaments] = useState<any[]>([])
@@ -82,6 +84,17 @@ export default function NewMatch() {
                 // No tournaments yet, force new tournament creation
                 setIsNewTournament(true)
                 setIsCurrent(true)
+            }
+
+            // Fetch unique past rivals for autocomplete
+            const { data: matchesData } = await supabase
+                .from('matches')
+                .select('rival')
+                .eq('team_id', user.team_id)
+            
+            if (matchesData) {
+                const uniqueRivals = Array.from(new Set(matchesData.map(m => m.rival).filter(Boolean)))
+                setPastRivals(uniqueRivals as string[])
             }
 
             setLoading(false)
@@ -239,16 +252,40 @@ export default function NewMatch() {
                             required
                         />
                     </div>
-                    <div>
+                    <div className="relative">
                         <label className="block text-xs text-gray-400 uppercase mb-1">Rival</label>
                         <input
                             type="text"
                             placeholder="Nombre del rival"
                             className="w-full bg-black/20 border border-white/10 rounded p-2 focus:border-accent-green outline-none"
                             value={rival}
-                            onChange={(e) => setRival(e.target.value)}
+                            onChange={(e) => {
+                                setRival(e.target.value)
+                                setShowSuggestions(true)
+                            }}
+                            onFocus={() => setShowSuggestions(true)}
+                            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                             required
                         />
+                        {showSuggestions && rival && (
+                            <div className="absolute z-10 w-full mt-1 bg-[#121415] border border-white/10 rounded-lg shadow-xl max-h-40 overflow-y-auto custom-scrollbar">
+                                {pastRivals
+                                    .filter(r => r.toLowerCase().includes(rival.toLowerCase()) && r.toLowerCase() !== rival.toLowerCase())
+                                    .map(suggestion => (
+                                        <button
+                                            key={suggestion}
+                                            type="button"
+                                            className="w-full text-left px-3 py-2 text-sm text-white hover:bg-white/10 transition-colors uppercase font-bold"
+                                            onClick={() => {
+                                                setRival(suggestion)
+                                                setShowSuggestions(false)
+                                            }}
+                                        >
+                                            {suggestion}
+                                        </button>
+                                    ))}
+                            </div>
+                        )}
                     </div>
                     <div className="flex gap-4">
                         <div className="flex-1">
