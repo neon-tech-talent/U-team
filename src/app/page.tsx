@@ -14,6 +14,7 @@ export default function Dashboard() {
   const [tournaments, setTournaments] = useState<any[]>([])
   const [selectedTournament, setSelectedTournament] = useState<string>('ALL')
   const [loading, setLoading] = useState(true)
+  const [teamInfo, setTeamInfo] = useState<any>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -47,7 +48,7 @@ export default function Dashboard() {
         const { data } = await query
         setAllMatches(data || [])
 
-        // Fetch tournaments
+          // Fetch tournaments
         if (u.team_id) {
           const { data: tData } = await supabase
             .from('tournaments')
@@ -59,6 +60,10 @@ export default function Dashboard() {
             const current = tData.find((t: any) => t.is_current)
             if (current) setSelectedTournament(current.id)
           }
+
+          // Fetch team info
+          const { data: teamData } = await supabase.from('teams').select('name').eq('id', u.team_id).single()
+          if (teamData) setTeamInfo(teamData)
         }
 
         setLoading(false)
@@ -225,7 +230,9 @@ export default function Dashboard() {
                   <div className="space-y-1">
                     <p className="text-[10px] text-gray-500 uppercase font-bold">{new Date(match.match_date).toLocaleDateString()}</p>
                     <div className="flex items-center gap-3">
-                      <span className="font-black text-lg">UT {match.goals_own}</span>
+                      <span className="font-black text-lg">
+                        {(teamInfo?.name?.substring(0, 2).toUpperCase() || 'UT')} {match.goals_own}
+                      </span>
                       <span className="text-gray-600 font-bold">-</span>
                       <span className="font-bold text-gray-400">{match.goals_rival} {match.rival}</span>
                     </div>

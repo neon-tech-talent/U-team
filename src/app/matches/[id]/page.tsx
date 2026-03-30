@@ -25,7 +25,7 @@ export default function MatchDetails({ params }: { params: Promise<{ id: string 
             setLoading(true)
             const { data: matchData } = await supabase
                 .from('matches')
-                .select('*')
+                .select('*, teams(name)')
                 .eq('id', id)
                 .single()
 
@@ -151,7 +151,7 @@ export default function MatchDetails({ params }: { params: Promise<{ id: string 
 
                 <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
                     <div className="flex-1 order-2 md:order-1 text-center md:text-right">
-                        <p className="text-xl md:text-2xl font-black mb-1">ULTIMATE TEAM</p>
+                        <p className="text-xl md:text-2xl font-black mb-1">{match.teams?.name?.toUpperCase() || 'MI EQUIPO'}</p>
                         {isWinner && <span className="text-[10px] bg-accent-green text-black px-2 py-0.5 font-bold rounded uppercase">Ganador</span>}
                     </div>
                     <div className="flex flex-col items-center order-1 md:order-2">
