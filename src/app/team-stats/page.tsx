@@ -116,20 +116,33 @@ export default function TeamStats() {
             rojas: stats.reduce((acc, curr) => acc + (curr.red_card ? 1 : 0), 0),
             mvp: mvpCount,
             globalAvg,
-            minPerGoal: totalGoals > 0 ? (totalMinutes / totalGoals).toFixed(0) : '-',
-            minPerAssist: totalAssists > 0 ? (totalMinutes / totalAssists).toFixed(0) : '-'
+            minPerGoal: totalGoals > 0 ? totalMinutes / totalGoals : 0,
+            minPerAssist: totalAssists > 0 ? totalMinutes / totalAssists : 0
         }
     }).sort((a, b) => {
         const { key, direction } = sortConfig
         let valA = a[key]
         let valB = b[key]
 
-        // Special handling for strings/numbers/formatting
-        if (typeof valA === 'string' && !isNaN(Number(valA))) valA = Number(valA)
-        if (typeof valB === 'string' && !isNaN(Number(valB))) valB = Number(valB)
+        // Handle string comparison (names)
+        if (key === 'full_name') {
+            const res = String(valA).localeCompare(String(valB))
+            return direction === 'asc' ? res : -res
+        }
 
-        if (valA < valB) return direction === 'asc' ? -1 : 1
-        if (valA > valB) return direction === 'asc' ? 1 : -1
+        // For Minutes per Goal/Assist, 0 means "no goals/assists" 
+        // We want these at the bottom regardless of the sort direction
+        if (key === 'minPerGoal' || key === 'minPerAssist') {
+            if (valA === 0 && valB !== 0) return 1  // a (0 goals) goes after b
+            if (valB === 0 && valA !== 0) return -1 // b (0 goals) goes after a
+            if (valA === 0 && valB === 0) return 0
+        }
+
+        const numA = Number(valA)
+        const numB = Number(valB)
+
+        if (numA < numB) return direction === 'asc' ? -1 : 1
+        if (numA > numB) return direction === 'asc' ? 1 : -1
         return 0
     })
 
@@ -249,9 +262,9 @@ export default function TeamStats() {
                             </td>
                             <td className="py-4 px-2 text-center text-gray-400 text-sm">{p.pj}</td>
                             <td className="py-4 px-2 text-center font-black text-accent-green text-sm">{p.goles}</td>
-                            <td className="py-4 px-2 text-center text-gray-400 text-sm italic">{p.minPerGoal}'</td>
+                            <td className="py-4 px-2 text-center text-gray-400 text-sm italic">{p.minPerGoal > 0 ? `${p.minPerGoal.toFixed(0)}'` : '-'}</td>
                             <td className="py-4 px-2 text-center font-bold text-sky-400 text-sm">{p.asistencias}</td>
-                            <td className="py-4 px-2 text-center text-gray-400 text-sm italic">{p.minPerAssist}'</td>
+                            <td className="py-4 px-2 text-center text-gray-400 text-sm italic">{p.minPerAssist > 0 ? `${p.minPerAssist.toFixed(0)}'` : '-'}</td>
                             <td className="py-4 px-2 text-center font-black text-warning-yellow text-sm">
                                 {p.globalAvg > 0 ? p.globalAvg.toFixed(1) : '-'}
                             </td>
