@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { getPlayers } from '@/lib/db'
-import { ChevronLeft, Trophy, Users, ShieldAlert } from 'lucide-react'
+import { ChevronLeft, Trophy, Users, ShieldAlert, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 
 export default function TeamStats() {
     const [loading, setLoading] = useState(true)
@@ -16,6 +16,7 @@ export default function TeamStats() {
     const [tournaments, setTournaments] = useState<any[]>([])
     const [selectedTournament, setSelectedTournament] = useState<string>('ALL')
     const [players, setPlayers] = useState<any[]>([])
+    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' }>({ key: 'goles', direction: 'desc' })
     const router = useRouter()
 
     useEffect(() => {
@@ -118,7 +119,31 @@ export default function TeamStats() {
             minPerGoal: totalGoals > 0 ? (totalMinutes / totalGoals).toFixed(0) : '-',
             minPerAssist: totalAssists > 0 ? (totalMinutes / totalAssists).toFixed(0) : '-'
         }
-    }).sort((a, b) => b.goles - a.goles || b.asistencias - a.asistencias)
+    }).sort((a, b) => {
+        const { key, direction } = sortConfig
+        let valA = a[key]
+        let valB = b[key]
+
+        // Special handling for strings/numbers/formatting
+        if (typeof valA === 'string' && !isNaN(Number(valA))) valA = Number(valA)
+        if (typeof valB === 'string' && !isNaN(Number(valB))) valB = Number(valB)
+
+        if (valA < valB) return direction === 'asc' ? -1 : 1
+        if (valA > valB) return direction === 'asc' ? 1 : -1
+        return 0
+    })
+
+    const handleSort = (key: string) => {
+        setSortConfig(prev => ({
+            key,
+            direction: prev.key === key && prev.direction === 'desc' ? 'asc' : 'desc'
+        }))
+    }
+
+    const SortIcon = ({ colKey }: { colKey: string }) => {
+        if (sortConfig.key !== colKey) return <ArrowUpDown size={12} className="ml-1 opacity-30" />
+        return sortConfig.direction === 'asc' ? <ArrowUp size={12} className="ml-1 text-accent-green" /> : <ArrowDown size={12} className="ml-1 text-accent-green" />
+    }
 
     const teamTotals = matches.reduce((acc, m) => {
         if (m.goals_own > m.goals_rival) acc.pg++
@@ -189,14 +214,30 @@ export default function TeamStats() {
             <table className="w-full text-left min-w-[650px] md:min-w-0">
                 <thead className="bg-white/5 text-[10px] text-gray-400 uppercase">
                     <tr>
-                        <th className="py-3 px-4">Jugador</th>
-                        <th className="py-3 px-2 text-center">PJ</th>
-                        <th className="py-3 px-2 text-center text-accent-green">G</th>
-                        <th className="py-3 px-2 text-center text-accent-green/60">Min/G</th>
-                        <th className="py-3 px-2 text-center text-sky-400">A</th>
-                        <th className="py-3 px-2 text-center text-sky-400/60">Min/A</th>
-                        <th className="py-3 px-2 text-center text-warning-yellow">AVG</th>
-                        <th className="py-3 px-2 text-center text-warning-yellow">MVP</th>
+                        <th className="py-3 px-4 cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('full_name')}>
+                            <div className="flex items-center">Jugador <SortIcon colKey="full_name" /></div>
+                        </th>
+                        <th className="py-3 px-2 text-center cursor-pointer hover:text-white transition-colors" onClick={() => handleSort('pj')}>
+                            <div className="flex items-center justify-center">PJ <SortIcon colKey="pj" /></div>
+                        </th>
+                        <th className="py-3 px-2 text-center text-accent-green cursor-pointer hover:brightness-125 transition-colors" onClick={() => handleSort('goles')}>
+                            <div className="flex items-center justify-center">G <SortIcon colKey="goles" /></div>
+                        </th>
+                        <th className="py-3 px-2 text-center text-accent-green/60 cursor-pointer hover:brightness-125 transition-colors" onClick={() => handleSort('minPerGoal')}>
+                            <div className="flex items-center justify-center">Min/G <SortIcon colKey="minPerGoal" /></div>
+                        </th>
+                        <th className="py-3 px-2 text-center text-sky-400 cursor-pointer hover:brightness-125 transition-colors" onClick={() => handleSort('asistencias')}>
+                            <div className="flex items-center justify-center">A <SortIcon colKey="asistencias" /></div>
+                        </th>
+                        <th className="py-3 px-2 text-center text-sky-400/60 cursor-pointer hover:brightness-125 transition-colors" onClick={() => handleSort('minPerAssist')}>
+                            <div className="flex items-center justify-center">Min/A <SortIcon colKey="minPerAssist" /></div>
+                        </th>
+                        <th className="py-3 px-2 text-center text-warning-yellow cursor-pointer hover:brightness-125 transition-colors" onClick={() => handleSort('globalAvg')}>
+                            <div className="flex items-center justify-center">AVG <SortIcon colKey="globalAvg" /></div>
+                        </th>
+                        <th className="py-3 px-2 text-center text-warning-yellow cursor-pointer hover:brightness-125 transition-colors" onClick={() => handleSort('mvp')}>
+                            <div className="flex items-center justify-center">MVP <SortIcon colKey="mvp" /></div>
+                        </th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
